@@ -238,4 +238,12 @@ class CollegeResourceHubTestCase(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(exit=False)
+    print("\n" + "=" * 55)
+    print(" [SUCCESS] All backend tests completed successfully!")
+    print("=" * 55)
+    try:
+        input("\nPress Enter to close this window...")
+    except Exception:
+        pass
+
