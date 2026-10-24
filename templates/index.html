@@ -1,0 +1,4159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>College Resource Hub — Question Paper & Academic Archive</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Client-Side Libraries for Instant PDF & Document Operations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.9/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+  <style>
+    :root {
+      --ink: #1B2A41;
+      --ink-rgb: 27, 42, 65;
+      --paper: #F1E9D8;
+      --paper-2: #E8DEC8;
+      --paper-card: #FBF7EE;
+      --stamp: #A23B2E;
+      --stamp-hover: #83271c;
+      --sage: #6E7F6C;
+      --gold: #D4AF37;
+      --text: #21201C;
+      --muted: #6B685C;
+      --line: rgba(27, 42, 65, 0.18);
+      --line-subtle: rgba(27, 42, 65, 0.08);
+      --radius: 4px;
+      --shadow-sm: 2px 2px 0 rgba(27, 42, 65, 0.08);
+      --shadow-md: 4px 4px 0 rgba(27, 42, 65, 0.12);
+      --shadow-lg: 6px 6px 0 rgba(27, 42, 65, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--paper);
+      background-image:
+        radial-gradient(circle at 1px 1px, rgba(27, 42, 65, 0.07) 1px, transparent 0);
+      background-size: 24px 24px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: clamp(12px, 2.5vw, 24px) clamp(10px, 2vw, 20px) 60px;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: min(1080px, 100%);
+    }
+
+    /* Top Utility Bar */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--line-subtle);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+    }
+
+    .system-status {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--sage);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: #2E7D32;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 6px #2E7D32;
+    }
+
+    .auth-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-pill {
+      background: var(--paper-card);
+      border: 1px solid var(--line);
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+    }
+
+    .user-pill.admin-badge {
+      border-color: var(--stamp);
+      color: var(--stamp);
+      font-weight: 600;
+      background: #faeae8;
+    }
+
+    /* Masthead */
+    .masthead {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-bottom: 3px double var(--ink);
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .masthead-title {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: clamp(28px, 4.5vw, 42px);
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      line-height: 1.05;
+    }
+
+    .masthead-sub {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-top: 6px;
+    }
+
+    .masthead-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .archive-mark {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--ink);
+      border: 1px solid var(--ink);
+      padding: 6px 12px;
+      border-radius: var(--radius);
+      white-space: nowrap;
+      transform: rotate(-1.5deg);
+      background: var(--paper-card);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Search & Stats Bar */
+    .search-panel {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .search-input-wrapper svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: var(--sage);
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 14px 12px 40px;
+      background: var(--paper-card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px;
+      color: var(--ink);
+      outline: none;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.15s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--ink);
+      box-shadow: var(--shadow-md);
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+      display: none;
+    }
+
+    /* Admin Action Button */
+    .admin-upload-btn {
+      background: var(--stamp);
+      color: #fff;
+      border: 1px solid var(--stamp);
+      padding: 10px 16px;
+      border-radius: var(--radius);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.15s ease;
+    }
+
+    .admin-upload-btn:hover {
+      background: var(--stamp-hover);
+      box-shadow: var(--shadow-md);
+      transform: translate(-1px, -1px);
+    }
+
+    /* Stats Ribbon */
+    .stats-ribbon {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .stat-box {
+      text-align: center;
+    }
+
+    .stat-val {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--sage);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* Callnumber Breadcrumb */
+    .callnumber {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12.5px;
+      margin-bottom: 24px;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--stamp);
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .callnumber button {
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: inherit;
+      color: var(--ink);
+      cursor: pointer;
+      padding: 2px 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .callnumber button:hover {
+      text-decoration: underline;
+    }
+
+    .callnumber button:disabled {
+      color: var(--stamp);
+      cursor: default;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .callnumber .sep {
+      color: var(--sage);
+      margin: 0 4px;
+    }
+
+    /* Section Label */
+    .section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-label::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+
+    /* Cards Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      position: relative;
+      background: var(--paper-card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px 16px 16px;
+      cursor: pointer;
+      text-align: left;
+      font-family: 'Inter', sans-serif;
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 120px;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 14px;
+      width: 28px;
+      height: 7px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-top: none;
+      border-radius: 0 0 3px 3px;
+    }
+
+    .card:hover,
+    .card:focus-visible {
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--ink);
+      outline: none;
+    }
+
+    .card-index {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--stamp);
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .card-title {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 17.5px;
+      color: var(--ink);
+      line-height: 1.25;
+    }
+
+    .card-meta {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--sage);
+      margin-top: 10px;
+    }
+
+    /* Paper List Item / Leaf */
+    .leaf {
+      background: var(--paper-card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.12s ease;
+    }
+
+    .leaf:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--ink);
+    }
+
+    .leaf-info {
+      flex: 1;
+    }
+
+    .leaf-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+    }
+
+    .leaf-year {
+      font-family: 'Fraunces', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .leaf-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10.5px;
+      color: var(--sage);
+      background: var(--paper-2);
+      padding: 2px 8px;
+      border-radius: 3px;
+      border: 1px solid var(--line-subtle);
+    }
+
+    .leaf-exam-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 2px;
+      text-transform: uppercase;
+    }
+
+    .badge-iae1 { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .badge-iae2 { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .badge-endsem { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+    .leaf-meta {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .leaf-rating {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      color: #b45309;
+    }
+
+    .leaf-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    /* Buttons */
+    .btn {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      border: 1px solid var(--ink);
+      background: transparent;
+      color: var(--ink);
+      font-weight: 500;
+      transition: all 0.12s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn:hover {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .btn.primary {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .btn.primary:hover {
+      background: var(--stamp);
+      border-color: var(--stamp);
+    }
+
+    .btn.danger {
+      border-color: #991b1b;
+      color: #991b1b;
+    }
+
+    .btn.danger:hover {
+      background: #991b1b;
+      color: white;
+    }
+
+    .btn.small {
+      padding: 4px 8px;
+      font-size: 10px;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(27, 42, 65, 0.6);
+      backdrop-filter: blur(2px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--paper-card);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 28px;
+      position: relative;
+    }
+
+    .modal-box.large {
+      max-width: 780px;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--muted);
+    }
+
+    .modal-close:hover {
+      color: var(--ink);
+    }
+
+    .modal-title {
+      font-family: 'Fraunces', serif;
+      font-size: 24px;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .modal-desc {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--sage);
+      margin-bottom: 20px;
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #C8C0B0;
+      border-radius: var(--radius);
+      background: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px;
+      color: var(--ink);
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--ink);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* Auth Tabs */
+    .auth-tabs {
+      display: flex;
+      border-bottom: 2px solid var(--line);
+      margin-bottom: 20px;
+    }
+
+    .auth-tab-btn {
+      flex: 1;
+      padding: 10px;
+      background: none;
+      border: none;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+    }
+
+    .auth-tab-btn.active {
+      color: var(--ink);
+      border-bottom-color: var(--stamp);
+      font-weight: 600;
+    }
+
+    /* Quick Demo Logins */
+    .demo-accounts {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px dashed var(--line);
+    }
+
+    .demo-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--sage);
+      margin-bottom: 8px;
+    }
+
+    .demo-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .demo-btn {
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10.5px;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .demo-btn:hover {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .demo-btn.admin-pill {
+      border-color: var(--stamp);
+      color: var(--stamp);
+    }
+
+    .demo-btn.admin-pill:hover {
+      background: var(--stamp);
+      color: #fff;
+    }
+
+    /* File Drop Area */
+    .dropzone {
+      border: 2px dashed #C8C0B0;
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      background: #faf8f2;
+      transition: border-color 0.2s;
+    }
+
+    .dropzone:hover,
+    .dropzone.dragover {
+      border-color: var(--ink);
+      background: #f4eee1;
+    }
+
+    .dropzone p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .file-preview {
+      margin-top: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--ink);
+      background: var(--paper-2);
+      padding: 6px 10px;
+      border-radius: 3px;
+      display: none;
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      background: var(--ink);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: var(--radius);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideUp 0.2s ease-out;
+      border-left: 4px solid var(--stamp);
+    }
+
+    .toast.success {
+      border-left-color: #2E7D32;
+    }
+
+    .toast.error {
+      border-left-color: #C62828;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* PDF View Container */
+    .pdf-viewer-frame {
+      width: 100%;
+      height: 520px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #525659;
+    }
+
+    .empty-state {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: var(--sage);
+      padding: 36px 0;
+      text-align: center;
+    }
+
+    /* Admin Management Drawer / Table */
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      margin-top: 12px;
+    }
+
+    .admin-table th,
+    .admin-table td {
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+    }
+
+    .admin-table th {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--sage);
+    }
+
+    footer {
+      margin-top: 50px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--sage);
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+
+    /* ================= Primary Hub Navigation Tabs ================= */
+    .hub-nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 22px;
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .hub-nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .hub-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      border-bottom: none;
+      border-radius: var(--radius) var(--radius) 0 0;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      position: relative;
+      bottom: -1px;
+    }
+
+    .hub-nav-btn:hover {
+      color: var(--ink);
+      background: var(--paper-card);
+    }
+
+    .hub-nav-btn.active {
+      color: var(--ink);
+      font-weight: 600;
+      background: var(--paper-card);
+      border-color: var(--ink);
+      border-bottom: 2px solid var(--paper-card);
+      box-shadow: 0 -2px 5px rgba(27, 42, 65, 0.05);
+    }
+
+    .hub-tab-panel {
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ================= Student PDF Toolkit Styles ================= */
+    .toolkit-header {
+      background: var(--paper-card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .toolkit-title {
+      font-family: 'Fraunces', serif;
+      font-size: 22px;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .toolkit-sub {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--sage);
+    }
+
+    .tools-subnav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .tool-subbtn {
+      padding: 8px 14px;
+      background: var(--paper-card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11.5px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tool-subbtn:hover {
+      border-color: var(--ink);
+      color: var(--ink);
+    }
+
+    .tool-subbtn.active {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tool-pane {
+      display: none;
+      background: var(--paper-card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tool-pane.active {
+      display: block;
+    }
+
+    .tool-instruction {
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px;
+      color: var(--muted);
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    /* Queue for PDF Merge */
+    .file-queue {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 16px 0;
+      max-height: 340px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .file-queue-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--ink);
+    }
+
+    .queue-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+
+    .queue-badge {
+      background: var(--ink);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+    }
+
+    .queue-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .queue-btn {
+      background: none;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      padding: 3px 6px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .queue-btn:hover {
+      border-color: var(--ink);
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .queue-btn.remove:hover {
+      border-color: #C62828;
+      color: #C62828;
+      background: #fde8e8;
+    }
+
+    /* Photo Grid for Image to PDF */
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+      max-height: 380px;
+      overflow-y: auto;
+      padding: 6px 2px;
+    }
+
+    .photo-card {
+      position: relative;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .photo-thumb-wrap {
+      width: 100%;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #000;
+      border-radius: 2px;
+    }
+
+    .photo-thumb {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      transition: transform 0.2s ease;
+    }
+
+    .photo-order-tag {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(27, 42, 65, 0.85);
+      color: #fff;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    .photo-card-controls {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 6px;
+      gap: 4px;
+    }
+
+    .photo-ctrl-btn {
+      flex: 1;
+      padding: 4px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      font-size: 11px;
+      cursor: pointer;
+      color: var(--ink);
+    }
+
+    .photo-ctrl-btn:hover {
+      background: var(--paper);
+    }
+
+    /* Settings Strip */
+    .settings-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      margin: 16px 0;
+    }
+
+    /* Academic Paper Text Editor */
+    .academic-editor {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .academic-textarea {
+      width: 100%;
+      min-height: 220px;
+      border: none;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: var(--text);
+      resize: vertical;
+      background: transparent;
+    }
+
+    .editor-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--sage);
+      border-top: 1px dashed var(--line);
+      padding-top: 6px;
+    }
+
+    /* Document to PDF Preview Box */
+    .doc-preview-box {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+      max-height: 240px;
+      overflow-y: auto;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--ink);
+      white-space: pre-wrap;
+      margin: 12px 0;
+    }
+
+    /* ================= Smart Attendance Calculator Styles ================= */
+    .attendance-hero {
+      background: var(--paper-card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .attendance-hero-title {
+      font-family: 'Fraunces', serif;
+      font-size: 22px;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .attendance-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .attendance-calc-card {
+      background: var(--paper-card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-heading {
+      font-family: 'Fraunces', serif;
+      font-size: 17px;
+      color: var(--ink);
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--line-subtle);
+      padding-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Gauge / Meter Widget */
+    .gauge-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      background: var(--paper-card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .gauge-wrapper {
+      position: relative;
+      width: 170px;
+      height: 170px;
+      margin: 10px auto;
+    }
+
+    .gauge-svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .gauge-bg {
+      fill: none;
+      stroke: var(--paper-2);
+      stroke-width: 12;
+    }
+
+    .gauge-bar {
+      fill: none;
+      stroke: #2E7D32;
+      stroke-width: 12;
+      stroke-linecap: round;
+      stroke-dasharray: 440;
+      stroke-dashoffset: 440;
+      transition: stroke-dashoffset 0.8s ease, stroke 0.3s ease;
+    }
+
+    .gauge-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .gauge-val {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1;
+    }
+
+    .gauge-val small {
+      font-size: 16px;
+    }
+
+    .gauge-caption {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--sage);
+      margin-top: 4px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      margin-top: 10px;
+    }
+
+    .status-badge.safe {
+      background: #E8F5E9;
+      color: #1B5E20;
+      border: 1px solid #A5D6A7;
+    }
+
+    .status-badge.warning {
+      background: #FFF8E1;
+      color: #E65100;
+      border: 1px solid #FFE082;
+    }
+
+    .status-badge.danger {
+      background: #FFEBEE;
+      color: #B71C1C;
+      border: 1px solid #EF9A9A;
+    }
+
+    /* Bunk & Catchup Guidance Banners */
+    .bunk-banner {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: var(--radius);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+      border-left: 4px solid;
+    }
+
+    .bunk-banner.safe {
+      background: #F1F8E9;
+      border-color: #33691E;
+      color: #1B5E20;
+    }
+
+    .bunk-banner.warning {
+      background: #FFFDE7;
+      border-color: #F57F17;
+      color: #795548;
+    }
+
+    .bunk-banner.danger {
+      background: #FFEBEE;
+      border-color: #C62828;
+      color: #B71C1C;
+    }
+
+    .bunk-highlight {
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    /* Subject Tracker Section */
+    .subject-tracker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .subject-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    .subject-card {
+      background: var(--paper-card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .subject-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .subject-card-title {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--ink);
+    }
+
+    .subject-card-stats {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .subject-pct {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .subject-pct.safe { color: #2E7D32; }
+    .subject-pct.warning { color: #E65100; }
+    .subject-pct.danger { color: #C62828; }
+
+    .subject-counts {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .subject-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .action-btn-attend {
+      flex: 1;
+      padding: 6px;
+      background: #E8F5E9;
+      border: 1px solid #A5D6A7;
+      color: #1B5E20;
+      border-radius: var(--radius);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .action-btn-attend:hover {
+      background: #C8E6C9;
+    }
+
+    .action-btn-miss {
+      flex: 1;
+      padding: 6px;
+      background: #FFEBEE;
+      border: 1px solid #EF9A9A;
+      color: #B71C1C;
+      border-radius: var(--radius);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .action-btn-miss:hover {
+      background: #FFCDD2;
+    }
+
+    .action-btn-del {
+      padding: 6px 8px;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .action-btn-del:hover {
+      color: #C62828;
+      border-color: #C62828;
+    }
+
+    /* Aggregate Bar */
+    .aggregate-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+    }
+
+    /* ================= Full Responsive Layout (Mobile, Tablet, Laptop) ================= */
+    @media (max-width: 860px) {
+      .attendance-layout {
+        grid-template-columns: 1fr;
+      }
+      .stats-ribbon {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 10px 8px 60px;
+      }
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .masthead {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .masthead-title {
+        font-size: 26px;
+      }
+      .masthead-actions {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+      .hub-nav {
+        gap: 4px;
+      }
+      .hub-nav-btn {
+        padding: 8px 12px;
+        font-size: 11.5px;
+      }
+      .search-panel {
+        flex-direction: column;
+      }
+      .search-input-wrapper {
+        min-width: 100%;
+      }
+      .stats-ribbon {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 8px 10px;
+      }
+      .stat-val {
+        font-size: 14px;
+      }
+      .stat-label {
+        font-size: 9.5px;
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      .leaf {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .leaf-actions {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
+      .modal-box {
+        padding: 18px 14px;
+        max-width: 96vw;
+      }
+      .toolkit-header, .attendance-hero {
+        padding: 14px;
+      }
+      .tool-pane, .attendance-calc-card, .gauge-card {
+        padding: 16px 12px;
+      }
+      .photo-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .subject-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-container">
+
+    <!-- Top Utility Bar: Live status & Auth status -->
+    <!-- Top Utility Bar: Live status & Auth status -->
+    <div class="top-bar">
+      <div class="system-status">
+        <span class="status-dot"></span> LIVE ARCHIVE
+        <span id="roleNotice">Role: Guest Student</span>
+      </div>
+
+      <div class="auth-bar" id="authBar">
+        <!-- Injected via JS based on session -->
+      </div>
+    </div>
+
+    <!-- Masthead -->
+    <header class="masthead">
+      <div>
+        <h1 class="masthead-title">College Resource Hub</h1>
+        <div class="masthead-sub">Previous Year Question Papers & Academic Archive</div>
+      </div>
+
+      <div class="masthead-actions">
+        <button id="adminUploadTrigger" class="admin-upload-btn" style="display: none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Upload Paper
+        </button>
+
+        <button id="adminManageTrigger" class="btn" style="display: none;">
+          Archive Records
+        </button>
+
+        <div class="archive-mark">EST. ARCHIVE</div>
+      </div>
+    </header>
+
+    <!-- ================= Primary Hub Navigation Tabs ================= -->
+    <nav class="hub-nav" id="hubNav">
+      <button class="hub-nav-btn active" id="tabBtnArchive" onclick="switchHubTab('archive')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <span>Question Papers</span>
+      </button>
+      <button class="hub-nav-btn" id="tabBtnPdfTools" onclick="switchHubTab('pdf-tools')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>Student PDF Toolkit</span>
+      </button>
+      <button class="hub-nav-btn" id="tabBtnAttendance" onclick="switchHubTab('attendance')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+        <span>Attendance Calculator</span>
+      </button>
+    </nav>
+
+    <!-- ================= 1. QUESTION PAPERS ARCHIVE TAB ================= -->
+    <div id="sectionArchive" class="hub-tab-panel active">
+      <!-- Search and Controls -->
+      <div class="search-panel">
+        <div class="search-input-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input 
+            type="text" 
+            id="globalSearch" 
+            class="search-input" 
+            placeholder="Fast Search: Subject, Branch (AIML, DS), Sem, Exam Type (IAE, END SEM)..."
+            autocomplete="off"
+          >
+          <button id="clearSearch" class="search-clear">&times;</button>
+        </div>
+      </div>
+
+      <!-- Stats Ribbon -->
+      <div class="stats-ribbon" id="statsRibbon">
+        <div class="stat-box">
+          <div class="stat-val" id="statPapers">—</div>
+          <div class="stat-label">Papers Cataloged</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statBranches">7</div>
+          <div class="stat-label">Branches Covered</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statDownloads">—</div>
+          <div class="stat-label">Total Downloads</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">3 Admins</div>
+          <div class="stat-label">Verified Uploaders</div>
+        </div>
+      </div>
+
+      <!-- Callnumber / Breadcrumb strip -->
+      <nav class="callnumber" id="callnumber" aria-label="Breadcrumb"></nav>
+
+      <!-- Section Heading -->
+      <div id="sectionLabel" class="section-label"></div>
+
+      <!-- Dynamic Content Area -->
+      <main id="content"></main>
+    </div>
+
+    <!-- ================= 2. STUDENT PDF TOOLKIT TAB ================= -->
+    <div id="sectionPdfTools" class="hub-tab-panel" style="display: none;">
+      <div class="toolkit-header">
+        <h2 class="toolkit-title">Student PDF Toolkit</h2>
+        <div class="toolkit-sub">Fast, privacy-friendly in-browser utilities for your academic study materials</div>
+      </div>
+
+      <!-- Sub-tool navigation -->
+      <div class="tools-subnav">
+        <button class="tool-subbtn active" id="subBtnMerge" onclick="switchToolSubTab('merge')">
+          📑 Merge PDFs
+        </button>
+        <button class="tool-subbtn" id="subBtnPhoto" onclick="switchToolSubTab('photo')">
+          🖼️ Photo to PDF
+        </button>
+        <button class="tool-subbtn" id="subBtnText" onclick="switchToolSubTab('text')">
+          ✍️ Text to PDF
+        </button>
+        <button class="tool-subbtn" id="subBtnDoc" onclick="switchToolSubTab('doc')">
+          📄 Document to PDF
+        </button>
+      </div>
+
+      <!-- PANE 1: MERGE PDFS -->
+      <div class="tool-pane active" id="paneMerge">
+        <p class="tool-instruction">
+          Combine 2 or more PDF lecture notes, question paper sets, or assignment files into a single unified PDF document.
+        </p>
+
+        <div class="dropzone" id="mergeDropzone" onclick="document.getElementById('mergeFileInput').click()">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--sage)">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="12" y1="18" x2="12" y2="12"></line>
+            <line x1="9" y1="15" x2="15" y2="15"></line>
+          </svg>
+          <p><strong>Click to choose PDF files</strong> or drag and drop here</p>
+          <small style="color:var(--muted); font-size:11px;">Select 2 or more PDF documents</small>
+        </div>
+        <input type="file" id="mergeFileInput" multiple accept=".pdf" style="display:none;" onchange="handleMergeFilesSelected(event)">
+
+        <!-- Queue list -->
+        <div class="file-queue" id="mergeFileQueue" style="display:none;"></div>
+
+        <div id="mergeControls" style="display:none; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label for="mergeOutputName">Output File Name (Optional)</label>
+            <input type="text" id="mergeOutputName" placeholder="e.g. Combined_Unit_Notes.pdf" value="Merged_Study_Notes.pdf">
+          </div>
+          <button class="btn primary" id="btnRunMerge" onclick="executeMergePdfs()" style="width: 100%; justify-content: center; padding: 12px;">
+            Merge & Download PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- PANE 2: PHOTO TO PDF -->
+      <div class="tool-pane" id="panePhoto">
+        <p class="tool-instruction">
+          Convert photo scans, blackboard pictures, or handwritten notebook pages (JPG, PNG, WebP) into an organized A4 PDF.
+        </p>
+
+        <div class="dropzone" id="photoDropzone" onclick="document.getElementById('photoFileInput').click()">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--sage)">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          <p><strong>Click to choose photos / notes scans</strong> or drag and drop</p>
+          <small style="color:var(--muted); font-size:11px;">Supports JPG, PNG, WebP camera shots</small>
+        </div>
+        <input type="file" id="photoFileInput" multiple accept="image/*" style="display:none;" onchange="handlePhotoFilesSelected(event)">
+
+        <!-- Settings Strip -->
+        <div class="settings-strip" id="photoSettingsStrip" style="display:none;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label for="photoPageSize">Page Size</label>
+            <select id="photoPageSize">
+              <option value="a4" selected>Standard A4</option>
+              <option value="fit">Fit to Image Size</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label for="photoOrientation">Orientation</label>
+            <select id="photoOrientation">
+              <option value="portrait" selected>Portrait</option>
+              <option value="landscape">Landscape</option>
+              <option value="auto">Auto (Match Image)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label for="photoMargin">Page Margin</label>
+            <select id="photoMargin">
+              <option value="none" selected>No Margin (Full Bleed)</option>
+              <option value="compact">Compact (8mm)</option>
+              <option value="normal">Standard (15mm)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Photo thumbnails grid -->
+        <div class="photo-grid" id="photoGrid" style="display:none;"></div>
+
+        <div id="photoControls" style="display:none; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label for="photoOutputName">Output File Name</label>
+            <input type="text" id="photoOutputName" placeholder="e.g. Lecture_Notes_Scan.pdf" value="Notes_Scans.pdf">
+          </div>
+          <button class="btn primary" id="btnRunPhotoPdf" onclick="executePhotosToPdf()" style="width: 100%; justify-content: center; padding: 12px;">
+            Convert Photos to PDF & Download
+          </button>
+        </div>
+      </div>
+
+      <!-- PANE 3: TEXT TO PDF -->
+      <div class="tool-pane" id="paneText">
+        <p class="tool-instruction">
+          Compose or paste your quick lecture summaries, formulas, or assignment answers and export them directly to a clean PDF.
+        </p>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="textDocTitle">Document Title</label>
+            <input type="text" id="textDocTitle" placeholder="e.g. Unit 2: Artificial Intelligence Principles" value="Lecture Notes Summary">
+          </div>
+          <div class="form-group">
+            <label for="textDocAuthor">Author / Student Name</label>
+            <input type="text" id="textDocAuthor" placeholder="e.g. Rahul Sharma" value="Student">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="textDocSubject">Course / Subject (Optional)</label>
+            <input type="text" id="textDocSubject" placeholder="e.g. AIML Sem 4">
+          </div>
+          <div class="form-group">
+            <label for="textFontSize">Font Size</label>
+            <select id="textFontSize">
+              <option value="10">10pt (Compact)</option>
+              <option value="11" selected>11pt (Standard Academic)</option>
+              <option value="13">13pt (Large / Readable)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="academic-editor">
+          <textarea 
+            id="textDocContent" 
+            class="academic-textarea" 
+            placeholder="Type or paste your notes, chapter summaries, key questions, or assignment content here..."
+            oninput="updateTextDocStats()"
+          ></textarea>
+          <div class="editor-stats">
+            <span id="textWordsCount">0 words</span>
+            <span id="textCharsCount">0 characters</span>
+          </div>
+        </div>
+
+        <button class="btn primary" id="btnRunTextPdf" onclick="executeTextToPdf()" style="width: 100%; justify-content: center; padding: 12px; margin-top: 16px;">
+          Generate Notes PDF & Download
+        </button>
+      </div>
+
+      <!-- PANE 4: DOCUMENT TO PDF -->
+      <div class="tool-pane" id="paneDoc">
+        <p class="tool-instruction">
+          Upload Microsoft Word documents (<code>.docx</code>), text files (<code>.txt</code>), or Markdown (<code>.md</code>) to render into PDF format.
+        </p>
+
+        <div class="dropzone" id="docDropzone" onclick="document.getElementById('docFileInput').click()">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--sage)">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <p><strong>Click to choose Document</strong> (.docx, .txt, .md)</p>
+          <small style="color:var(--muted); font-size:11px;">Automatic layout formatting</small>
+        </div>
+        <input type="file" id="docFileInput" accept=".docx,.txt,.md" style="display:none;" onchange="handleDocFileSelected(event)">
+
+        <div id="docPreviewContainer" style="display:none; margin-top: 16px;">
+          <div style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--ink); margin-bottom: 6px;">
+            File: <strong id="docFileName">—</strong> (<span id="docFileSize">—</span>)
+          </div>
+          <div class="doc-preview-box" id="docPreviewText"></div>
+
+          <button class="btn primary" id="btnRunDocPdf" onclick="executeDocToPdf()" style="width: 100%; justify-content: center; padding: 12px;">
+            Convert Document to PDF & Download
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 3. ATTENDANCE CALCULATOR TAB ================= -->
+    <div id="sectionAttendance" class="hub-tab-panel" style="display: none;">
+      <div class="attendance-hero">
+        <h2 class="attendance-hero-title">Attendance Calculator</h2>
+        <div class="toolkit-sub">Official College Formula: <code>(Attended Lectures / Total Conducted) × 100</code></div>
+      </div>
+
+      <!-- Two-column interactive layout -->
+      <div class="attendance-layout">
+        
+        <!-- Left: Quick Calculator Form -->
+        <div class="attendance-calc-card">
+          <h3 class="card-heading">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            Overall Attendance Entry
+          </h3>
+
+          <div class="form-group">
+            <label for="calcTotalLectures">Total Lectures Conducted</label>
+            <input type="number" id="calcTotalLectures" min="0" value="40" placeholder="e.g. 40" oninput="calculateAttendance()">
+          </div>
+
+          <div class="form-group">
+            <label for="calcAttendedLectures">Lectures You Attended</label>
+            <input type="number" id="calcAttendedLectures" min="0" value="34" placeholder="e.g. 34" oninput="calculateAttendance()">
+          </div>
+
+          <div class="form-group">
+            <label for="calcTargetPct">Target Requirement Percentage (%)</label>
+            <div style="display:flex; align-items:center; gap: 10px;">
+              <input type="range" id="calcTargetSlider" min="50" max="95" value="75" step="1" style="flex:1;" oninput="syncTargetSlider(this.value)">
+              <input type="number" id="calcTargetPct" min="50" max="100" value="75" style="width: 75px;" oninput="syncTargetInput(this.value)">
+            </div>
+            <small style="color:var(--sage); font-size:11px; margin-top:4px; display:block;">
+              75% is standard minimum college eligibility criteria
+            </small>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 14px;">
+            <button class="btn small" onclick="quickIncrementAttendance(1, 1)" title="Attended today's lecture">+1 Attend Today</button>
+            <button class="btn small" onclick="quickIncrementAttendance(0, 1)" title="Missed today's lecture">+1 Missed Today</button>
+            <button class="btn small danger" onclick="resetAttendanceCalc()">Reset</button>
+          </div>
+        </div>
+
+        <!-- Right: Gauge & Status -->
+        <div class="gauge-card">
+          <div class="gauge-wrapper">
+            <svg class="gauge-svg" viewBox="0 0 160 160">
+              <circle class="gauge-bg" cx="80" cy="80" r="70"></circle>
+              <circle id="gaugeCircle" class="gauge-bar" cx="80" cy="80" r="70"></circle>
+            </svg>
+            <div class="gauge-content">
+              <div class="gauge-val" id="gaugeVal">85<small>%</small></div>
+              <div class="gauge-caption" id="gaugeRatio">34 / 40 Attended</div>
+            </div>
+          </div>
+
+          <div id="attendanceStatusBadge" class="status-badge safe">
+            🟢 SAFE ZONE (≥ 75%)
+          </div>
+
+          <!-- Dynamic Attendance Guidance Banner -->
+          <div id="attendanceGuidanceBanner" class="bunk-banner safe" style="width: 100%;">
+            Loading attendance status...
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Subject-Wise Semester Attendance Tracker -->
+      <div class="attendance-hero" style="margin-top: 10px;">
+        <div class="subject-tracker-header">
+          <div>
+            <h3 class="card-heading" style="margin-bottom: 2px; border-bottom:none; padding-bottom:0;">
+              Subject-Wise Semester Course Tracker
+            </h3>
+            <div style="font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--sage);">
+              Track attendance per course • Automatically saved locally on this browser
+            </div>
+          </div>
+          <button class="btn small primary" onclick="openAddSubjectModal()">+ Add Course</button>
+        </div>
+
+        <!-- Aggregate Summary Bar -->
+        <div class="aggregate-bar" id="aggregateSummaryBar">
+          <div>Cumulative Across All Subjects: <strong id="aggRatio">0 / 0</strong> (<strong id="aggPct">0%</strong>)</div>
+          <div id="aggStatusBadge" class="status-badge safe" style="margin:0; padding:2px 8px; font-size:10.5px;">Safe</div>
+        </div>
+
+        <!-- Subject cards grid -->
+        <div class="subject-grid" id="subjectGrid">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Dynamic Content Area -->
+    <div style="display:none;"><main id="contentBackup"></main></div>
+
+    <!-- Footer -->
+    <footer>
+      Branch + Semester + Subject + Exam Type + Year → Verified Question Paper Archive<br>
+      Role-Based Access Control • 3 Dedicated College Administrators • SQLite Persistent Store
+    </footer>
+
+  </div>
+
+  <!-- ================= AUTH MODAL (Login / Register) ================= -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeAuthModal()">&times;</button>
+
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" id="tabLoginBtn" onclick="switchAuthTab('login')">Login</button>
+        <button class="auth-tab-btn" id="tabRegisterBtn" onclick="switchAuthTab('register')">Create Account</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="loginRole">Login As</label>
+          <select id="loginRole" required>
+            <option value="student">Student / User</option>
+            <option value="admin">College Administrator (Total 3 Admins)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="loginEmail">Email / College ID</label>
+          <input type="text" id="loginEmail" placeholder="e.g. admin1@college.edu or STU202401" required>
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter your password" required>
+        </div>
+
+        <button type="submit" class="btn primary" style="width: 100%; padding: 12px; justify-content: center;">
+          Sign In
+        </button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="registerForm" style="display: none;">
+        <div class="form-group">
+          <label for="regName">Full Name</label>
+          <input type="text" id="regName" placeholder="e.g. Aditi Sharma" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="regCollegeId">College ID</label>
+            <input type="text" id="regCollegeId" placeholder="e.g. STU202499" required>
+          </div>
+          <div class="form-group">
+            <label for="regBranch">Branch</label>
+            <select id="regBranch" required>
+              <option value="">Select Branch</option>
+              <option value="AIML">AIML</option>
+              <option value="DS">Data Science</option>
+              <option value="COMPS">Computer Engineering</option>
+              <option value="IT">Information Technology</option>
+              <option value="ECS">Electronics & CS</option>
+              <option value="CIVIL">Civil Engineering</option>
+              <option value="MECHANICAL">Mechanical</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="regEmail">College Email</label>
+          <input type="email" id="regEmail" placeholder="student@college.edu" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="regPassword">Password</label>
+            <input type="password" id="regPassword" placeholder="Min 6 characters" required>
+          </div>
+          <div class="form-group">
+            <label for="regConfirm">Confirm Password</label>
+            <input type="password" id="regConfirm" placeholder="Re-type password" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn primary" style="width: 100%; padding: 12px; justify-content: center;">
+          Register Account
+        </button>
+      </form>
+
+      <!-- Quick Demo Access (Local Developer / Viva Machine Only) -->
+      <div class="demo-accounts" id="demoAccountsSection" style="display: none;">
+        <div class="demo-title">Local Machine Quick Access:</div>
+        <div class="demo-buttons">
+          <button class="demo-btn admin-pill" onclick="quickFillLogin('admin1@college.edu', 'happy1100', 'admin')">
+            Admin 1 (Anukalp Sharma)
+          </button>
+          <button class="demo-btn admin-pill" onclick="quickFillLogin('admin2@college.edu', 'prachi1100', 'admin')">
+            Admin 2 (Prachi Sharma)
+          </button>
+          <button class="demo-btn admin-pill" onclick="quickFillLogin('admin3@college.edu', 'johara1100', 'admin')">
+            Admin 3 (Johara Shaikh)
+          </button>
+          <button class="demo-btn" onclick="quickFillLogin('student@college.edu', 'student123', 'student')">
+            Student (Rahul)
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= ADMIN UPLOAD MODAL ================= -->
+  <div class="modal-overlay" id="uploadModal">
+    <div class="modal-box large">
+      <button class="modal-close" onclick="closeUploadModal()">&times;</button>
+      <h2 class="modal-title">Upload Question Paper</h2>
+      <p class="modal-desc">Administrator Archive Intake Portal</p>
+
+      <form id="uploadForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="upBranch">Branch</label>
+            <select id="upBranch" required onchange="onUploadBranchChange()">
+              <option value="">Select Branch</option>
+              <option value="FIRST YEAR">First Year (All Branches)</option>
+              <option value="AIML">AIML</option>
+              <option value="DS">Data Science</option>
+              <option value="COMPS">Computer Engineering</option>
+              <option value="IT">Information Technology</option>
+              <option value="ECS">Electronics & CS</option>
+              <option value="CIVIL">Civil Engineering</option>
+              <option value="MECHANICAL">Mechanical</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="upYearOfStudy">Year of Study</label>
+            <select id="upYearOfStudy" required onchange="onUploadYearChange()">
+              <option value="1">1st Year</option>
+              <option value="2">2nd Year</option>
+              <option value="3">3rd Year</option>
+              <option value="4">4th Year</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="upSemester">Semester</label>
+            <select id="upSemester" required onchange="onUploadSemChange()">
+              <option value="">Select Semester</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="upSubject">Subject</label>
+            <select id="upSubject" required>
+              <option value="">Select Subject</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="upExamType">Exam Type</label>
+            <select id="upExamType" required>
+              <option value="IAE 1">IAE 1 (Internal Assessment 1)</option>
+              <option value="IAE 2">IAE 2 (Internal Assessment 2)</option>
+              <option value="END SEM">END SEM (End Semester Examination)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="upExamYear">Exam Year</label>
+            <select id="upExamYear" required>
+              <option value="2025">2025</option>
+              <option value="2024" selected>2024</option>
+              <option value="2023">2023</option>
+              <option value="2022">2022</option>
+              <option value="2021">2021</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="upTitle">Display Title (Optional)</label>
+          <input type="text" id="upTitle" placeholder="e.g. Data Structures End Sem 2024 with Marking Scheme">
+        </div>
+
+        <div class="form-group">
+          <label>Question Paper File (PDF / DOCX)</label>
+          <div class="dropzone" id="fileDropzone" onclick="document.getElementById('paperFileInput').click()">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--sage)">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <p>Click to choose file or drag and drop here</p>
+            <div id="filePreview" class="file-preview"></div>
+          </div>
+          <input type="file" id="paperFileInput" style="display: none;" accept=".pdf,.docx,.doc,.png,.jpg" required>
+        </div>
+
+        <button type="submit" id="uploadSubmitBtn" class="btn primary" style="width: 100%; padding: 12px; justify-content: center;">
+          Upload & Catalog in Archive
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= ADMIN MANAGE PAPERS MODAL ================= -->
+  <div class="modal-overlay" id="manageModal">
+    <div class="modal-box large">
+      <button class="modal-close" onclick="closeManageModal()">&times;</button>
+      <h2 class="modal-title">Archived Records Management</h2>
+      <p class="modal-desc">Administrator control over cataloged question papers</p>
+
+      <div style="overflow-x:auto;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Subject</th>
+              <th>Branch / Sem</th>
+              <th>Exam</th>
+              <th>Year</th>
+              <th>Downloads</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="manageTableBody">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PAPER PREVIEW MODAL ================= -->
+  <div class="modal-overlay" id="viewModal">
+    <div class="modal-box large">
+      <button class="modal-close" onclick="closeViewModal()">&times;</button>
+      <h2 class="modal-title" id="viewModalTitle">Document Preview</h2>
+      <p class="modal-desc" id="viewModalDesc"></p>
+      
+      <iframe id="pdfFrame" class="pdf-viewer-frame" src="about:blank"></iframe>
+
+      <div style="margin-top: 14px; display: flex; justify-content: space-between; align-items: center;">
+        <button class="btn" onclick="openRatingModalFromView()">Rate this Paper ★</button>
+        <button id="viewModalDownloadBtn" class="btn primary">Download File</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= RATING MODAL ================= -->
+  <div class="modal-overlay" id="rateModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeRateModal()">&times;</button>
+      <h2 class="modal-title">Rate Question Paper</h2>
+      <p class="modal-desc" id="rateModalSub">Share feedback for your fellow students</p>
+
+      <form id="rateForm">
+        <input type="hidden" id="ratePaperId">
+        <div class="form-group">
+          <label>Select Rating</label>
+          <select id="rateScore" required>
+            <option value="5">★★★★★ (5 Stars - Extremely Helpful / Clear)</option>
+            <option value="4">★★★★☆ (4 Stars - Very Good)</option>
+            <option value="3">★★★☆☆ (3 Stars - Average)</option>
+            <option value="2">★★☆☆☆ (2 Stars - Mediocre)</option>
+            <option value="1">★☆☆☆☆ (1 Star - Poor quality / incomplete)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="rateComment">Comment (Optional)</label>
+          <textarea id="rateComment" rows="3" placeholder="e.g. Accurate paper, includes all part B solutions!"></textarea>
+        </div>
+
+        <button type="submit" class="btn primary" style="width: 100%; padding: 10px; justify-content: center;">
+          Submit Review
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= ADD SUBJECT MODAL ================= -->
+  <div class="modal-overlay" id="addSubjectModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeAddSubjectModal()">&times;</button>
+      <h2 class="modal-title">Add Course / Subject</h2>
+      <p class="modal-desc">Track individual course attendance and exam eligibility</p>
+
+      <form id="addSubjectForm" onsubmit="handleAddSubjectSubmit(event)">
+        <div class="form-group">
+          <label for="newSubjectName">Course / Subject Name</label>
+          <input type="text" id="newSubjectName" placeholder="e.g. Operating Systems, Mathematics IV" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="newSubjectAttended">Attended Classes</label>
+            <input type="number" id="newSubjectAttended" min="0" value="0" required>
+          </div>
+          <div class="form-group">
+            <label for="newSubjectTotal">Total Conducted</label>
+            <input type="number" id="newSubjectTotal" min="0" value="0" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn primary" style="width: 100%; padding: 12px; justify-content: center;">
+          Add to My Semester Tracker
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notifications Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ================= JAVASCRIPT ================= -->
+  <script>
+    /* State */
+    let currentUser = null;
+    let hierarchyData = {};
+    let currentNavPath = [];
+    let activeViewingPaper = null;
+    let allPapersCache = [];
+
+    const EXAM_TYPES = ["IAE 1", "IAE 2", "END SEM"];
+    const YEARS = ["2025", "2024", "2023", "2022"];
+
+    /* Toast Notification Helper */
+    function showToast(msg, type = "info") {
+      const c = document.getElementById("toastContainer");
+      const t = document.createElement("div");
+      t.className = `toast ${type}`;
+      t.innerHTML = `<span>${msg}</span>`;
+      c.appendChild(t);
+      setTimeout(() => {
+        t.style.opacity = '0';
+        setTimeout(() => t.remove(), 200);
+      }, 3500);
+    }
+
+    /* Init Application */
+    async function initApp() {
+      await checkAuth();
+      await fetchStats();
+      await fetchHierarchy();
+      setupEventListeners();
+      renderNavigation();
+      initAttendanceTracker();
+      calculateAttendance();
+      startLiveSync();
+    }
+
+    /* Auth Verification */
+    async function checkAuth() {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = await res.json();
+        currentUser = data.authenticated ? data.user : null;
+        renderAuthBar();
+        if (!currentUser) {
+          const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          if (!isLocal) {
+            openAuthModal('register');
+          }
+        }
+      } catch (err) {
+        console.error("Auth check error:", err);
+      }
+    }
+
+    function renderAuthBar() {
+      const authBar = document.getElementById("authBar");
+      const roleNotice = document.getElementById("roleNotice");
+      const adminUploadTrigger = document.getElementById("adminUploadTrigger");
+      const adminManageTrigger = document.getElementById("adminManageTrigger");
+
+      // Hide demo accounts on remote/mobile connections; show only on local machine
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const demoAccountsBox = document.getElementById("demoAccountsSection");
+      if (demoAccountsBox) {
+        demoAccountsBox.style.display = isLocal ? "block" : "none";
+      }
+
+      if (currentUser) {
+        const isAdmin = currentUser.role === "admin";
+        roleNotice.textContent = isAdmin 
+          ? `Admin Mode: ${currentUser.name}` 
+          : `Student: ${currentUser.name} (${currentUser.branch})`;
+
+        adminUploadTrigger.style.display = isAdmin ? "inline-flex" : "none";
+        adminManageTrigger.style.display = isAdmin ? "inline-flex" : "none";
+
+        const docAuthorEl = document.getElementById("textDocAuthor");
+        if (docAuthorEl && (docAuthorEl.value === "Student" || !docAuthorEl.value)) {
+          docAuthorEl.value = currentUser.name;
+        }
+
+        authBar.innerHTML = `
+          <div class="user-pill ${isAdmin ? 'admin-badge' : ''}">
+            ${isAdmin ? '★ ADMIN' : 'STUDENT'} · ${currentUser.name.split(' ')[0]}
+          </div>
+          <button class="btn small" onclick="handleLogout()">Logout</button>
+        `;
+      } else {
+        roleNotice.textContent = "Guest Mode (Read-Only Access)";
+        adminUploadTrigger.style.display = "none";
+        adminManageTrigger.style.display = "none";
+        authBar.innerHTML = `
+          <button class="btn small primary" onclick="openAuthModal('login')">Sign In</button>
+          <button class="btn small" onclick="openAuthModal('register')">Register</button>
+        `;
+      }
+    }
+
+    /* Logout */
+    async function handleLogout() {
+      try {
+        await fetch("/api/auth/logout", { method: "POST" });
+        currentUser = null;
+        renderAuthBar();
+        showToast("You have been signed out.", "info");
+        render();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    /* Fetch Hierarchy & Stats */
+    async function fetchHierarchy() {
+      try {
+        const res = await fetch("/api/hierarchy");
+        const data = await res.json();
+        if (data.success) {
+          hierarchyData = data.hierarchy;
+        }
+      } catch (e) {
+        console.error("Hierarchy fetch error:", e);
+      }
+    }
+
+    async function fetchStats() {
+      try {
+        const res = await fetch("/api/stats");
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById("statPapers").textContent = data.stats.papers;
+          document.getElementById("statDownloads").textContent = data.stats.downloads;
+          document.getElementById("statBranches").textContent = data.stats.branches;
+        }
+      } catch (e) {
+        console.error("Stats fetch error:", e);
+      }
+    }
+
+    /* Navigation / Router */
+    function go(entry) {
+      currentNavPath.push(entry);
+      render();
+    }
+
+    function jumpTo(index) {
+      currentNavPath = currentNavPath.slice(0, index + 1);
+      render();
+    }
+
+    function home() {
+      currentNavPath = [];
+      document.getElementById("globalSearch").value = "";
+      render();
+    }
+
+    function currentScreen() {
+      return currentNavPath.length
+        ? currentNavPath[currentNavPath.length - 1]
+        : { screen: "home", label: "Home" };
+    }
+
+    /* Main Render Logic */
+    async function render() {
+      renderCallnumber();
+      const scr = currentScreen();
+      const content = document.getElementById("content");
+      const label = document.getElementById("sectionLabel");
+
+      content.innerHTML = "";
+      label.textContent = "";
+
+      // 1. Home
+      if (scr.screen === "home") {
+        return renderHome(content, label);
+      }
+
+      // 2. First Year Semesters
+      if (scr.screen === "firstYearSemesters") {
+        label.textContent = "First Year — Select Semester";
+        const sems = Object.keys(hierarchyData["FIRST YEAR"]?.[1] || {});
+        return renderCards(content, sems.map((s, i) => ({
+          title: s,
+          meta: `${hierarchyData["FIRST YEAR"][1][s].length} core subjects`,
+          idx: i + 1
+        })), item => go({
+          screen: "firstYearSubjects",
+          label: item.title,
+          sem: item.title
+        }));
+      }
+
+      // 3. First Year Subjects
+      if (scr.screen === "firstYearSubjects") {
+        label.textContent = `First Year · ${scr.sem} — Subjects`;
+        const subjects = hierarchyData["FIRST YEAR"]?.[1]?.[scr.sem] || [];
+        return renderCards(content, subjects.map((s, i) => ({
+          title: s,
+          meta: "Archived Papers & Marking Schemes",
+          idx: i + 1
+        })), item => go({
+          screen: "examTypes",
+          label: item.title,
+          branch: "FIRST YEAR",
+          sem: scr.sem,
+          subject: item.title
+        }));
+      }
+
+      // 4. Other Branches
+      if (scr.screen === "branches") {
+        label.textContent = "Select Engineering Branch";
+        const branches = Object.keys(hierarchyData).filter(b => b !== "FIRST YEAR");
+        return renderCards(content, branches.map((b, i) => ({
+          title: b,
+          meta: "2nd · 3rd · 4th Year Archive",
+          idx: i + 1
+        })), item => go({
+          screen: "branchYear",
+          label: item.title,
+          branch: item.title
+        }));
+      }
+
+      // 5. Branch -> Select Year
+      if (scr.screen === "branchYear") {
+        label.textContent = `${scr.branch} — Select Year of Study`;
+        const years = [
+          { title: "Second Year", year: 2, meta: "Semesters 3 & 4" },
+          { title: "Third Year", year: 3, meta: "Semesters 5 & 6" },
+          { title: "Fourth Year", year: 4, meta: "Semesters 7 & 8" }
+        ];
+        return renderCards(content, years.map((y, i) => ({
+          ...y,
+          idx: i + 1
+        })), item => go({
+          screen: "branchSem",
+          label: item.title,
+          branch: scr.branch,
+          year: item.year
+        }));
+      }
+
+      // 6. Branch -> Year -> Semesters
+      if (scr.screen === "branchSem") {
+        label.textContent = `${scr.branch} · ${scr.label} — Select Semester`;
+        const sems = Object.keys(hierarchyData[scr.branch]?.[scr.year] || {});
+        return renderCards(content, sems.map((s, i) => ({
+          title: s,
+          meta: `${(hierarchyData[scr.branch][scr.year][s] || []).length} subjects`,
+          idx: i + 1
+        })), item => go({
+          screen: "branchSubjects",
+          label: item.title,
+          branch: scr.branch,
+          year: scr.year,
+          sem: item.title
+        }));
+      }
+
+      // 7. Branch -> Year -> Sem -> Subjects
+      if (scr.screen === "branchSubjects") {
+        label.textContent = `${scr.branch} · ${scr.sem} — Subjects`;
+        const subjects = hierarchyData[scr.branch]?.[scr.year]?.[scr.sem] || [];
+        return renderCards(content, subjects.map((s, i) => ({
+          title: s,
+          meta: "View archived exam papers",
+          idx: i + 1
+        })), item => go({
+          screen: "examTypes",
+          label: item.title,
+          branch: scr.branch,
+          year: scr.year,
+          sem: scr.sem,
+          subject: item.title
+        }));
+      }
+
+      // 8. Exam Types (IAE 1, IAE 2, END SEM)
+      if (scr.screen === "examTypes") {
+        label.textContent = `${scr.subject} — Examination Types`;
+        return renderCards(content, EXAM_TYPES.map((e, i) => ({
+          title: e,
+          meta: `Archived ${e} question papers`,
+          idx: i + 1
+        })), item => go({
+          screen: "papersList",
+          label: item.title,
+          branch: scr.branch,
+          sem: scr.sem,
+          subject: scr.subject,
+          examType: item.title
+        }));
+      }
+
+      // 9. Actual Papers List from Backend
+      if (scr.screen === "papersList") {
+        return renderPapersList(content, label, scr);
+      }
+    }
+
+    /* Render Home Screen */
+    function renderHome(content, label) {
+      label.textContent = "Catalog Intake — Select Department / Year";
+
+      const grid = document.createElement("div");
+      grid.className = "grid";
+
+      grid.appendChild(makeCard({
+        idx: 1,
+        title: "First Year (Common)",
+        meta: "Semester 1 · Semester 2 (All Branches)"
+      }, () => go({
+        screen: "firstYearSemesters",
+        label: "First Year"
+      })));
+
+      grid.appendChild(makeCard({
+        idx: 2,
+        title: "Engineering Departments",
+        meta: "AIML, DS, COMPS, IT, ECS, CIVIL, MECH"
+      }, () => go({
+        screen: "branches",
+        label: "Departments"
+      })));
+
+      content.appendChild(grid);
+
+      // Render Recent Papers section
+      renderRecentPapers(content);
+    }
+
+    /* Render Cards Helper */
+    function renderCards(container, items, onClick) {
+      const grid = document.createElement("div");
+      grid.className = "grid";
+
+      items.forEach(item => {
+        grid.appendChild(makeCard(item, () => onClick(item)));
+      });
+
+      container.appendChild(grid);
+    }
+
+    function makeCard(item, onClick) {
+      const card = document.createElement("button");
+      card.className = "card";
+      card.innerHTML = `
+        <div>
+          <span class="card-index">NO. ${String(item.idx).padStart(2, '0')}</span>
+          <div class="card-title">${item.title}</div>
+        </div>
+        ${item.meta ? `<div class="card-meta">${item.meta}</div>` : ""}
+      `;
+      card.addEventListener("click", onClick);
+      return card;
+    }
+
+    /* Render Papers List from Backend */
+    async function renderPapersList(content, label, scr) {
+      label.textContent = `${scr.subject} · ${scr.examType} — Archived Papers`;
+
+      content.innerHTML = `<div class="empty-state">Loading papers from archive...</div>`;
+
+      try {
+        const url = `/api/papers?branch=${encodeURIComponent(scr.branch || '')}&semester=${encodeURIComponent(scr.sem || '')}&subject=${encodeURIComponent(scr.subject)}&exam_type=${encodeURIComponent(scr.examType)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        content.innerHTML = "";
+
+        if (!data.papers || data.papers.length === 0) {
+          content.innerHTML = `
+            <div class="empty-state">
+              No question papers archived yet for this category.<br><br>
+              ${currentUser && currentUser.role === 'admin' 
+                ? `<button class="btn primary" onclick="openUploadModalForCurrent()">Upload Now</button>`
+                : 'An administrator will upload them shortly.'}
+            </div>
+          `;
+          return;
+        }
+
+        data.papers.forEach(p => {
+          content.appendChild(makeLeafElement(p));
+        });
+      } catch (err) {
+        content.innerHTML = `<div class="empty-state" style="color:var(--stamp)">Error loading papers. Please check server.</div>`;
+      }
+    }
+
+    /* Render Recent Papers on Home */
+    async function renderRecentPapers(content) {
+      const wrap = document.createElement("div");
+      wrap.style.marginTop = "32px";
+      wrap.innerHTML = `
+        <div class="section-label">Recently Added Papers</div>
+        <div id="recentPapersContainer"><div class="empty-state">Fetching recent additions...</div></div>
+      `;
+      content.appendChild(wrap);
+
+      try {
+        const res = await fetch("/api/papers");
+        const data = await res.json();
+        const container = document.getElementById("recentPapersContainer");
+        container.innerHTML = "";
+
+        if (data.papers && data.papers.length > 0) {
+          data.papers.slice(0, 5).forEach(p => {
+            container.appendChild(makeLeafElement(p));
+          });
+        } else {
+          container.innerHTML = `<div class="empty-state">No papers uploaded yet.</div>`;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    /* Build Paper Leaf (List Item) */
+    function makeLeafElement(p) {
+      const leaf = document.createElement("div");
+      leaf.className = "leaf";
+
+      let badgeClass = "badge-endsem";
+      if (p.exam_type === "IAE 1") badgeClass = "badge-iae1";
+      if (p.exam_type === "IAE 2") badgeClass = "badge-iae2";
+
+      const formattedSize = p.file_size ? `${Math.round(p.file_size / 1024)} KB` : 'PDF';
+      const ratingStars = p.avg_rating > 0 ? `★ ${p.avg_rating} (${p.rating_count})` : 'Unrated';
+
+      const isAdmin = currentUser && currentUser.role === "admin";
+
+      leaf.innerHTML = `
+        <div class="leaf-info">
+          <div class="leaf-header">
+            <span class="leaf-exam-badge ${badgeClass}">${p.exam_type}</span>
+            <div class="leaf-year">${p.exam_year} — ${p.title || p.subject}</div>
+          </div>
+          <div class="leaf-tag">${p.branch} · ${p.semester} · ${p.subject}</div>
+          <div class="leaf-meta">
+            <span>By: ${p.uploader_name || 'Admin'}</span>
+            <span>File: ${formattedSize}</span>
+            <span>Downloads: ${p.download_count || 0}</span>
+            <span class="leaf-rating">${ratingStars}</span>
+          </div>
+        </div>
+
+        <div class="leaf-actions">
+          <button class="btn" onclick="openPreview(${p.id}, '${escapeQuote(p.title)}', '${p.subject}')">
+            View
+          </button>
+          <button class="btn primary" onclick="downloadPaper(${p.id})">
+            Download
+          </button>
+          <button class="btn small" onclick="openRateModal(${p.id}, '${escapeQuote(p.title)}')">
+            ★ Rate
+          </button>
+          ${isAdmin ? `
+            <button class="btn small danger" onclick="deletePaper(${p.id})">
+              Delete
+            </button>
+          ` : ''}
+        </div>
+      `;
+      return leaf;
+    }
+
+    function escapeQuote(str) {
+      return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    /* Breadcrumbs */
+    function renderCallnumber() {
+      const cn = document.getElementById("callnumber");
+      cn.innerHTML = "";
+
+      const trail = [{ label: "HOME", action: home }, ...currentNavPath];
+
+      trail.forEach((step, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = step.label || step.screen;
+
+        const isLast = i === trail.length - 1;
+        if (isLast) btn.disabled = true;
+
+        btn.addEventListener("click", () => {
+          if (i === 0) home();
+          else jumpTo(i - 1);
+        });
+
+        cn.appendChild(btn);
+
+        if (!isLast) {
+          const sep = document.createElement("span");
+          sep.className = "sep";
+          sep.textContent = "/";
+          cn.appendChild(sep);
+        }
+      });
+    }
+
+    /* Fast Global Search */
+    let searchDebounceTimer = null;
+    function setupEventListeners() {
+      const searchInput = document.getElementById("globalSearch");
+      const clearBtn = document.getElementById("clearSearch");
+
+      searchInput.addEventListener("input", e => {
+        const val = e.target.value.trim();
+        clearBtn.style.display = val ? "block" : "none";
+
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => {
+          if (val.length >= 2) {
+            executeGlobalSearch(val);
+          } else if (val.length === 0) {
+            render();
+          }
+        }, 250);
+      });
+
+      clearBtn.addEventListener("click", () => {
+        searchInput.value = "";
+        clearBtn.style.display = "none";
+        render();
+      });
+
+      // Drag & Drop File Upload
+      const dropzone = document.getElementById("fileDropzone");
+      const fileInput = document.getElementById("paperFileInput");
+
+      ['dragenter', 'dragover'].forEach(name => {
+        dropzone.addEventListener(name, (e) => {
+          e.preventDefault();
+          dropzone.classList.add('dragover');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(name => {
+        dropzone.addEventListener(name, (e) => {
+          e.preventDefault();
+          dropzone.classList.remove('dragover');
+        });
+      });
+
+      dropzone.addEventListener('drop', (e) => {
+        if (e.dataTransfer.files.length) {
+          fileInput.files = e.dataTransfer.files;
+          updateFilePreview(fileInput.files[0]);
+        }
+      });
+
+      fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) {
+          updateFilePreview(fileInput.files[0]);
+        }
+      });
+
+      // Upload Trigger Buttons
+      document.getElementById("adminUploadTrigger").addEventListener("click", openUploadModal);
+      document.getElementById("adminManageTrigger").addEventListener("click", openManageModal);
+
+      // Form Submits
+      document.getElementById("loginForm").addEventListener("submit", handleLoginSubmit);
+      document.getElementById("registerForm").addEventListener("submit", handleRegisterSubmit);
+      document.getElementById("uploadForm").addEventListener("submit", handleUploadSubmit);
+      document.getElementById("rateForm").addEventListener("submit", handleRateSubmit);
+    }
+
+    function updateFilePreview(file) {
+      const p = document.getElementById("filePreview");
+      p.style.display = "block";
+      p.textContent = `Selected: ${file.name} (${Math.round(file.size / 1024)} KB)`;
+    }
+
+    /* Execute Global Fast Search */
+    async function executeGlobalSearch(term) {
+      const content = document.getElementById("content");
+      const label = document.getElementById("sectionLabel");
+
+      label.textContent = `Search Archive — "${term}"`;
+      content.innerHTML = `<div class="empty-state">Searching archive index...</div>`;
+
+      try {
+        const res = await fetch(`/api/papers?search=${encodeURIComponent(term)}`);
+        const data = await res.json();
+        content.innerHTML = "";
+
+        if (!data.papers || data.papers.length === 0) {
+          content.innerHTML = `
+            <div class="empty-state">
+              No archived question papers matched "${term}".<br>
+              Try searching by subject name (e.g. "Data Structures", "Mathematics", "Physics") or branch code ("AIML", "COMPS").
+            </div>
+          `;
+          return;
+        }
+
+        data.papers.forEach(p => {
+          content.appendChild(makeLeafElement(p));
+        });
+      } catch (e) {
+        content.innerHTML = `<div class="empty-state">Search error. Please try again.</div>`;
+      }
+    }
+
+    /* Paper Download & View */
+    function downloadPaper(id) {
+      window.location.href = `/api/papers/${id}/download`;
+      setTimeout(fetchStats, 1500);
+      showToast("Download started!", "success");
+    }
+
+    function openPreview(id, title, subject) {
+      activeViewingPaper = { id, title, subject };
+      document.getElementById("viewModalTitle").textContent = title || subject;
+      document.getElementById("viewModalDesc").textContent = `Viewing paper ID: #${id}`;
+      document.getElementById("pdfFrame").src = `/api/papers/${id}/view`;
+      document.getElementById("viewModalDownloadBtn").onclick = () => downloadPaper(id);
+      document.getElementById("viewModal").classList.add("active");
+    }
+
+    function closeViewModal() {
+      document.getElementById("viewModal").classList.remove("active");
+      document.getElementById("pdfFrame").src = "about:blank";
+    }
+
+    function openRatingModalFromView() {
+      if (!activeViewingPaper) return;
+      closeViewModal();
+      openRateModal(activeViewingPaper.id, activeViewingPaper.title);
+    }
+
+    /* Ratings */
+    function openRateModal(paperId, title) {
+      if (!currentUser) {
+        showToast("Please sign in to rate question papers", "info");
+        openAuthModal('login');
+        return;
+      }
+      document.getElementById("ratePaperId").value = paperId;
+      document.getElementById("rateModalSub").textContent = `Paper: ${title}`;
+      document.getElementById("rateModal").classList.add("active");
+    }
+
+    function closeRateModal() {
+      document.getElementById("rateModal").classList.remove("active");
+    }
+
+    async function handleRateSubmit(e) {
+      e.preventDefault();
+      const paperId = document.getElementById("ratePaperId").value;
+      const rating = document.getElementById("rateScore").value;
+      const comment = document.getElementById("rateComment").value;
+
+      try {
+        const res = await fetch(`/api/papers/${paperId}/rate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ rating: parseInt(rating), comment })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast("Thank you! Rating recorded.", "success");
+          closeRateModal();
+          render();
+          pollSyncStatus(true);
+        } else {
+          showToast(data.error || "Failed to record rating", "error");
+        }
+      } catch (err) {
+        showToast("Server error recording rating", "error");
+      }
+    }
+
+    /* Auth Modal Management */
+    function openAuthModal(tab = 'login') {
+      document.getElementById("authModal").classList.add("active");
+      switchAuthTab(tab);
+    }
+
+    function closeAuthModal() {
+      document.getElementById("authModal").classList.remove("active");
+    }
+
+    function switchAuthTab(tab) {
+      const isLogin = tab === 'login';
+      document.getElementById("tabLoginBtn").className = `auth-tab-btn ${isLogin ? 'active' : ''}`;
+      document.getElementById("tabRegisterBtn").className = `auth-tab-btn ${!isLogin ? 'active' : ''}`;
+      document.getElementById("loginForm").style.display = isLogin ? 'block' : 'none';
+      document.getElementById("registerForm").style.display = !isLogin ? 'block' : 'none';
+    }
+
+    function quickFillLogin(email, pwd, role) {
+      document.getElementById("loginEmail").value = email;
+      document.getElementById("loginPassword").value = pwd;
+      document.getElementById("loginRole").value = role;
+      document.getElementById("loginForm").dispatchEvent(new Event('submit'));
+    }
+
+    async function handleLoginSubmit(e) {
+      e.preventDefault();
+      const identifier = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+      const role = document.getElementById("loginRole").value;
+
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identifier, password, role })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          currentUser = data.user;
+          closeAuthModal();
+          renderAuthBar();
+          showToast(`Welcome back, ${currentUser.name}!`, "success");
+          render();
+        } else {
+          showToast(data.error || "Login failed", "error");
+        }
+      } catch (err) {
+        showToast("Server connection error during login", "error");
+      }
+    }
+
+    async function handleRegisterSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById("regName").value;
+      const college_id = document.getElementById("regCollegeId").value;
+      const branch = document.getElementById("regBranch").value;
+      const email = document.getElementById("regEmail").value;
+      const password = document.getElementById("regPassword").value;
+      const confirm = document.getElementById("regConfirm").value;
+
+      if (password !== confirm) {
+        showToast("Passwords do not match", "error");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, college_id, branch, email, password })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          currentUser = data.user;
+          closeAuthModal();
+          renderAuthBar();
+          showToast("Account created successfully! Welcome to the Hub.", "success");
+          render();
+        } else {
+          showToast(data.error || "Registration failed", "error");
+        }
+      } catch (err) {
+        showToast("Server error during registration", "error");
+      }
+    }
+
+    /* Admin Upload Form Cascade */
+    function openUploadModal() {
+      document.getElementById("uploadModal").classList.add("active");
+      onUploadBranchChange();
+    }
+
+    function openUploadModalForCurrent() {
+      const scr = currentScreen();
+      openUploadModal();
+      if (scr.branch) {
+        document.getElementById("upBranch").value = scr.branch;
+        onUploadBranchChange();
+      }
+      if (scr.sem) {
+        document.getElementById("upSemester").value = scr.sem;
+        onUploadSemChange();
+      }
+      if (scr.subject) {
+        document.getElementById("upSubject").value = scr.subject;
+      }
+      if (scr.examType) {
+        document.getElementById("upExamType").value = scr.examType;
+      }
+    }
+
+    function closeUploadModal() {
+      document.getElementById("uploadModal").classList.remove("active");
+    }
+
+    function onUploadBranchChange() {
+      const branch = document.getElementById("upBranch").value;
+      const yearSelect = document.getElementById("upYearOfStudy");
+      const semSelect = document.getElementById("upSemester");
+
+      if (branch === "FIRST YEAR") {
+        yearSelect.value = "1";
+        yearSelect.disabled = true;
+      } else {
+        yearSelect.disabled = false;
+        if (yearSelect.value === "1") yearSelect.value = "2";
+      }
+
+      onUploadYearChange();
+    }
+
+    function onUploadYearChange() {
+      const branch = document.getElementById("upBranch").value;
+      const year = parseInt(document.getElementById("upYearOfStudy").value) || 1;
+      const semSelect = document.getElementById("upSemester");
+
+      semSelect.innerHTML = `<option value="">Select Semester</option>`;
+
+      if (!branch || !hierarchyData[branch]) return;
+
+      const sems = Object.keys(hierarchyData[branch][year] || {});
+      sems.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s;
+        opt.textContent = s;
+        semSelect.appendChild(opt);
+      });
+
+      if (sems.length > 0) {
+        semSelect.value = sems[0];
+        onUploadSemChange();
+      }
+    }
+
+    function onUploadSemChange() {
+      const branch = document.getElementById("upBranch").value;
+      const year = parseInt(document.getElementById("upYearOfStudy").value) || 1;
+      const sem = document.getElementById("upSemester").value;
+      const subSelect = document.getElementById("upSubject");
+
+      subSelect.innerHTML = `<option value="">Select Subject</option>`;
+      if (!branch || !hierarchyData[branch] || !hierarchyData[branch][year] || !hierarchyData[branch][year][sem]) return;
+
+      const subs = hierarchyData[branch][year][sem] || [];
+      subs.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s;
+        opt.textContent = s;
+        subSelect.appendChild(opt);
+      });
+    }
+
+    async function handleUploadSubmit(e) {
+      e.preventDefault();
+      const fileInput = document.getElementById("paperFileInput");
+      if (!fileInput.files.length) {
+        showToast("Please choose a file to upload", "error");
+        return;
+      }
+
+      const form = new FormData();
+      form.append("branch", document.getElementById("upBranch").value);
+      form.append("year_of_study", document.getElementById("upYearOfStudy").value);
+      form.append("semester", document.getElementById("upSemester").value);
+      form.append("subject", document.getElementById("upSubject").value);
+      form.append("exam_type", document.getElementById("upExamType").value);
+      form.append("exam_year", document.getElementById("upExamYear").value);
+      form.append("title", document.getElementById("upTitle").value);
+      form.append("file", fileInput.files[0]);
+
+      const submitBtn = document.getElementById("uploadSubmitBtn");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Uploading to Archive...";
+
+      try {
+        const res = await fetch("/api/papers", {
+          method: "POST",
+          body: form
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showToast("Question Paper uploaded and cataloged!", "success");
+          closeUploadModal();
+          document.getElementById("uploadForm").reset();
+          document.getElementById("filePreview").style.display = "none";
+          fetchStats();
+          render();
+          pollSyncStatus(true);
+        } else {
+          showToast(data.error || "Upload failed", "error");
+        }
+      } catch (err) {
+        showToast("Server connection error during upload", "error");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Upload & Catalog in Archive";
+      }
+    }
+
+    /* Admin Manage Modal */
+    async function openManageModal() {
+      document.getElementById("manageModal").classList.add("active");
+      const tbody = document.getElementById("manageTableBody");
+      tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Loading records...</td></tr>`;
+
+      try {
+        const res = await fetch("/api/papers");
+        const data = await res.json();
+        tbody.innerHTML = "";
+
+        if (!data.papers || data.papers.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No papers found.</td></tr>`;
+          return;
+        }
+
+        data.papers.forEach(p => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>#${p.id}</td>
+            <td><strong>${p.subject}</strong><br><small style="color:var(--muted)">${p.title}</small></td>
+            <td>${p.branch} · ${p.semester}</td>
+            <td><span class="leaf-exam-badge badge-iae1">${p.exam_type}</span></td>
+            <td>${p.exam_year}</td>
+            <td>${p.download_count}</td>
+            <td>
+              <button class="btn small" onclick="openPreview(${p.id}, '${escapeQuote(p.title)}', '${p.subject}')">View</button>
+              <button class="btn small danger" onclick="deletePaper(${p.id})">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Error loading records.</td></tr>`;
+      }
+    }
+
+    function closeManageModal() {
+      document.getElementById("manageModal").classList.remove("active");
+    }
+
+    async function deletePaper(paperId) {
+      if (!confirm(`Are you sure you want to permanently delete question paper #${paperId} from the archive?`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/papers/${paperId}`, { method: "DELETE" });
+        const data = await res.json();
+        if (data.success) {
+          showToast("Paper removed from archive", "success");
+          fetchStats();
+          if (document.getElementById("manageModal").classList.contains("active")) {
+            openManageModal();
+          }
+          render();
+          pollSyncStatus(true);
+        } else {
+          showToast(data.error || "Failed to delete paper", "error");
+        }
+      } catch (e) {
+        showToast("Error deleting paper", "error");
+      }
+    }
+
+    /* ============================================================== */
+    /* PRIMARY HUB TABS CONTROLLER                                    */
+    /* ============================================================== */
+    let activeHubTab = 'archive';
+
+    function switchHubTab(tab) {
+      activeHubTab = tab;
+      const tabMap = {
+        'archive': { btn: 'tabBtnArchive', sec: 'sectionArchive' },
+        'pdf-tools': { btn: 'tabBtnPdfTools', sec: 'sectionPdfTools' },
+        'attendance': { btn: 'tabBtnAttendance', sec: 'sectionAttendance' }
+      };
+
+      for (const [key, val] of Object.entries(tabMap)) {
+        const btn = document.getElementById(val.btn);
+        const sec = document.getElementById(val.sec);
+        if (btn) btn.classList.toggle("active", key === tab);
+        if (sec) sec.style.display = (key === tab) ? "block" : "none";
+      }
+
+      if (tab === 'attendance') {
+        calculateAttendance();
+        renderSubjectTracker();
+      } else if (tab === 'archive') {
+        if (!currentNavPath.length) {
+          render();
+        }
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ============================================================== */
+    /* SILENT REAL-TIME PEER SYNC ENGINE                              */
+    /* ============================================================== */
+    let lastSyncVersion = null;
+    let syncIntervalId = null;
+
+    async function pollSyncStatus(forceRefresh = false) {
+      try {
+        const res = await fetch("/api/sync/status");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.success) return;
+
+        // Update counts silently
+        if (data.papers_count !== undefined) {
+          const pEl = document.getElementById("statPapers");
+          if (pEl) pEl.textContent = data.papers_count;
+        }
+        if (data.downloads_count !== undefined) {
+          const dEl = document.getElementById("statDownloads");
+          if (dEl) dEl.textContent = data.downloads_count;
+        }
+
+        // Check version change
+        if (lastSyncVersion === null) {
+          lastSyncVersion = data.version;
+          return;
+        }
+
+        if (data.version !== lastSyncVersion || forceRefresh) {
+          lastSyncVersion = data.version;
+
+          // Silently refresh hierarchy
+          fetchHierarchy();
+
+          // Refresh current archive view seamlessly
+          if (activeHubTab === 'archive') {
+            const scr = currentScreen();
+            const searchVal = document.getElementById("globalSearch") ? document.getElementById("globalSearch").value.trim() : "";
+            if (searchVal) {
+              executeGlobalSearch(searchVal);
+            } else if (scr.screen === 'papersList') {
+              const content = document.getElementById("content");
+              const label = document.getElementById("sectionLabel");
+              renderPapersList(content, label, scr);
+            } else if (scr.screen === 'home') {
+              render();
+            }
+          }
+
+          // If Admin Manage Modal is open, refresh table
+          const manageModal = document.getElementById("manageModal");
+          if (manageModal && manageModal.classList.contains("active")) {
+            openManageModal();
+          }
+        }
+      } catch (err) {
+        // silent background poll
+      }
+    }
+
+    function startLiveSync() {
+      pollSyncStatus(true);
+      if (syncIntervalId) clearInterval(syncIntervalId);
+      // Background sync every 3 seconds
+      syncIntervalId = setInterval(() => {
+        pollSyncStatus(false);
+      }, 3000);
+    }
+
+    function switchToolSubTab(sub) {
+      const subs = ['merge', 'photo', 'text', 'doc'];
+      subs.forEach(s => {
+        const btn = document.getElementById("subBtn" + s.charAt(0).toUpperCase() + s.slice(1));
+        const pane = document.getElementById("pane" + s.charAt(0).toUpperCase() + s.slice(1));
+        if (btn) btn.classList.toggle("active", s === sub);
+        if (pane) pane.classList.toggle("active", s === sub);
+      });
+    }
+
+    /* ============================================================== */
+    /* 1. MERGE PDFS CONTROLLER                                       */
+    /* ============================================================== */
+    let mergeQueue = [];
+
+    function handleMergeFilesSelected(e) {
+      const files = Array.from(e.target.files);
+      if (!files.length) return;
+
+      files.forEach(f => {
+        if (f.name.toLowerCase().endsWith(".pdf")) {
+          mergeQueue.push(f);
+        }
+      });
+      renderMergeQueue();
+      e.target.value = "";
+    }
+
+    function renderMergeQueue() {
+      const queueDiv = document.getElementById("mergeFileQueue");
+      const controls = document.getElementById("mergeControls");
+
+      if (mergeQueue.length === 0) {
+        queueDiv.style.display = "none";
+        controls.style.display = "none";
+        return;
+      }
+
+      queueDiv.style.display = "flex";
+      controls.style.display = "block";
+      queueDiv.innerHTML = "";
+
+      mergeQueue.forEach((file, idx) => {
+        const sizeKb = (file.size / 1024).toFixed(1);
+        const item = document.createElement("div");
+        item.className = "file-queue-item";
+        item.innerHTML = `
+          <div class="queue-info">
+            <span class="queue-badge">#${idx + 1}</span>
+            <span style="font-weight:500;" title="${file.name}">${file.name}</span>
+            <small style="color:var(--muted)">(${sizeKb} KB)</small>
+          </div>
+          <div class="queue-actions">
+            <button class="queue-btn" onclick="moveMergeItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''}>▲</button>
+            <button class="queue-btn" onclick="moveMergeItem(${idx}, 1)" ${idx === mergeQueue.length - 1 ? 'disabled' : ''}>▼</button>
+            <button class="queue-btn remove" onclick="removeMergeItem(${idx})">&times;</button>
+          </div>
+        `;
+        queueDiv.appendChild(item);
+      });
+    }
+
+    function moveMergeItem(idx, dir) {
+      const target = idx + dir;
+      if (target < 0 || target >= mergeQueue.length) return;
+      const temp = mergeQueue[idx];
+      mergeQueue[idx] = mergeQueue[target];
+      mergeQueue[target] = temp;
+      renderMergeQueue();
+    }
+
+    function removeMergeItem(idx) {
+      mergeQueue.splice(idx, 1);
+      renderMergeQueue();
+    }
+
+    async function executeMergePdfs() {
+      if (mergeQueue.length < 2) {
+        showToast("Please select at least 2 PDF files to merge", "error");
+        return;
+      }
+
+      const btn = document.getElementById("btnRunMerge");
+      btn.disabled = true;
+      btn.textContent = "Merging PDFs...";
+
+      let outName = document.getElementById("mergeOutputName").value.trim() || "Merged_Study_Notes.pdf";
+      if (!outName.toLowerCase().endsWith(".pdf")) outName += ".pdf";
+
+      try {
+        if (window.PDFLib && window.PDFLib.PDFDocument) {
+          const mergedPdf = await PDFLib.PDFDocument.create();
+          for (const file of mergeQueue) {
+            const arrayBuf = await file.arrayBuffer();
+            const pdf = await PDFLib.PDFDocument.load(arrayBuf);
+            const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+            copiedPages.forEach(p => mergedPdf.addPage(p));
+          }
+          const pdfBytes = await mergedPdf.save();
+          const blob = new Blob([pdfBytes], { type: "application/pdf" });
+          triggerDownload(blob, outName);
+          showToast("PDFs merged successfully!", "success");
+        } else {
+          // Backend fallback
+          const formData = new FormData();
+          mergeQueue.forEach(f => formData.append("files", f));
+          formData.append("output_name", outName);
+
+          const res = await fetch("/api/tools/merge-pdf", { method: "POST", body: formData });
+          if (!res.ok) throw new Error("Server merge error");
+          const blob = await res.blob();
+          triggerDownload(blob, outName);
+          showToast("PDFs merged successfully!", "success");
+        }
+      } catch (err) {
+        console.error("Client merge failed, attempting server fallback:", err);
+        try {
+          const formData = new FormData();
+          mergeQueue.forEach(f => formData.append("files", f));
+          formData.append("output_name", outName);
+
+          const res = await fetch("/api/tools/merge-pdf", { method: "POST", body: formData });
+          if (!res.ok) throw new Error("Backend merge failed");
+          const blob = await res.blob();
+          triggerDownload(blob, outName);
+          showToast("PDFs merged via server!", "success");
+        } catch (e2) {
+          showToast("Failed to merge PDFs. Please ensure valid PDF files.", "error");
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Merge & Download PDF";
+      }
+    }
+
+    /* ============================================================== */
+    /* 2. PHOTO TO PDF CONTROLLER                                     */
+    /* ============================================================== */
+    let photoQueue = [];
+
+    function handlePhotoFilesSelected(e) {
+      const files = Array.from(e.target.files);
+      if (!files.length) return;
+
+      let loadedCount = 0;
+      files.forEach(f => {
+        if (f.type.startsWith("image/")) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            photoQueue.push({
+              file: f,
+              dataUrl: ev.target.result,
+              rotation: 0
+            });
+            loadedCount++;
+            if (loadedCount === files.length) {
+              renderPhotoGrid();
+            }
+          };
+          reader.readAsDataURL(f);
+        }
+      });
+      e.target.value = "";
+    }
+
+    function renderPhotoGrid() {
+      const grid = document.getElementById("photoGrid");
+      const controls = document.getElementById("photoControls");
+      const settings = document.getElementById("photoSettingsStrip");
+
+      if (photoQueue.length === 0) {
+        grid.style.display = "none";
+        controls.style.display = "none";
+        settings.style.display = "none";
+        return;
+      }
+
+      grid.style.display = "grid";
+      controls.style.display = "block";
+      settings.style.display = "grid";
+      grid.innerHTML = "";
+
+      photoQueue.forEach((item, idx) => {
+        const card = document.createElement("div");
+        card.className = "photo-card";
+        card.innerHTML = `
+          <span class="photo-order-tag">#${idx + 1}</span>
+          <div class="photo-thumb-wrap">
+            <img src="${item.dataUrl}" class="photo-thumb" style="transform: rotate(${item.rotation}deg);" alt="Scan ${idx+1}">
+          </div>
+          <div style="font-size:10.5px; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%; color:var(--ink);" title="${item.file.name}">
+            ${item.file.name}
+          </div>
+          <div class="photo-card-controls">
+            <button class="photo-ctrl-btn" onclick="rotatePhotoItem(${idx})" title="Rotate 90 degrees">🔄 90°</button>
+            <button class="photo-ctrl-btn" onclick="movePhotoItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''}>◀</button>
+            <button class="photo-ctrl-btn" onclick="movePhotoItem(${idx}, 1)" ${idx === photoQueue.length - 1 ? 'disabled' : ''}>▶</button>
+            <button class="photo-ctrl-btn" onclick="removePhotoItem(${idx})" style="color:#C62828;">✕</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function rotatePhotoItem(idx) {
+      photoQueue[idx].rotation = (photoQueue[idx].rotation + 90) % 360;
+      renderPhotoGrid();
+    }
+
+    function movePhotoItem(idx, dir) {
+      const target = idx + dir;
+      if (target < 0 || target >= photoQueue.length) return;
+      const temp = photoQueue[idx];
+      photoQueue[idx] = photoQueue[target];
+      photoQueue[target] = temp;
+      renderPhotoGrid();
+    }
+
+    function removePhotoItem(idx) {
+      photoQueue.splice(idx, 1);
+      renderPhotoGrid();
+    }
+
+    async function executePhotosToPdf() {
+      if (photoQueue.length === 0) {
+        showToast("Please choose at least 1 photo", "error");
+        return;
+      }
+
+      const btn = document.getElementById("btnRunPhotoPdf");
+      btn.disabled = true;
+      btn.textContent = "Converting Photos to PDF...";
+
+      let outName = document.getElementById("photoOutputName").value.trim() || "Notes_Scans.pdf";
+      if (!outName.toLowerCase().endsWith(".pdf")) outName += ".pdf";
+
+      const pageSize = document.getElementById("photoPageSize").value;
+      const orientation = document.getElementById("photoOrientation").value;
+      const marginMode = document.getElementById("photoMargin").value;
+      const marginPt = (marginMode === "normal") ? 28 : (marginMode === "compact" ? 12 : 0);
+
+      try {
+        if (window.jspdf && window.jspdf.jsPDF) {
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF({
+            orientation: orientation === "landscape" ? "l" : "p",
+            unit: "pt",
+            format: "a4"
+          });
+
+          for (let i = 0; i < photoQueue.length; i++) {
+            if (i > 0) pdf.addPage();
+            const p = photoQueue[i];
+
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            const img = new Image();
+            img.src = p.dataUrl;
+            await new Promise(res => { img.onload = res; });
+
+            const rot = p.rotation % 360;
+            if (rot === 90 || rot === 270) {
+              canvas.width = img.height;
+              canvas.height = img.width;
+            } else {
+              canvas.width = img.width;
+              canvas.height = img.height;
+            }
+
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate((rot * Math.PI) / 180);
+            ctx.drawImage(img, -img.width / 2, -img.height / 2);
+
+            const rotatedDataUrl = canvas.toDataURL("image/jpeg", 0.90);
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const availWidth = pageWidth - (marginPt * 2);
+            const availHeight = pageHeight - (marginPt * 2);
+
+            const imgRatio = canvas.width / canvas.height;
+            let renderW = availWidth;
+            let renderH = renderW / imgRatio;
+
+            if (renderH > availHeight) {
+              renderH = availHeight;
+              renderW = renderH * imgRatio;
+            }
+
+            const posX = marginPt + (availWidth - renderW) / 2;
+            const posY = marginPt + (availHeight - renderH) / 2;
+
+            pdf.addImage(rotatedDataUrl, "JPEG", posX, posY, renderW, renderH);
+          }
+
+          pdf.save(outName);
+          showToast("PDF created & downloaded!", "success");
+        } else {
+          // Backend fallback
+          const formData = new FormData();
+          photoQueue.forEach(p => formData.append("images", p.file));
+          formData.append("output_name", outName);
+          const res = await fetch("/api/tools/image-to-pdf", { method: "POST", body: formData });
+          const blob = await res.blob();
+          triggerDownload(blob, outName);
+          showToast("PDF created successfully!", "success");
+        }
+      } catch (err) {
+        console.error("Photo to PDF error:", err);
+        try {
+          const formData = new FormData();
+          photoQueue.forEach(p => formData.append("images", p.file));
+          formData.append("output_name", outName);
+          const res = await fetch("/api/tools/image-to-pdf", { method: "POST", body: formData });
+          const blob = await res.blob();
+          triggerDownload(blob, outName);
+          showToast("PDF created via server!", "success");
+        } catch (e2) {
+          showToast("Could not convert photos to PDF", "error");
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Convert Photos to PDF & Download";
+      }
+    }
+
+    /* ============================================================== */
+    /* 3. TEXT TO PDF CONTROLLER                                      */
+    /* ============================================================== */
+    function updateTextDocStats() {
+      const text = document.getElementById("textDocContent").value;
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      const chars = text.length;
+      document.getElementById("textWordsCount").textContent = `${words} words`;
+      document.getElementById("textCharsCount").textContent = `${chars} characters`;
+    }
+
+    async function executeTextToPdf() {
+      const content = document.getElementById("textDocContent").value.trim();
+      if (!content) {
+        showToast("Please enter notes or content text to generate PDF", "error");
+        return;
+      }
+
+      const title = document.getElementById("textDocTitle").value.trim() || "Notes";
+      const author = document.getElementById("textDocAuthor").value.trim() || (currentUser ? currentUser.name : "Student");
+      const subject = document.getElementById("textDocSubject").value.trim();
+      const fontSize = parseInt(document.getElementById("textFontSize").value) || 11;
+      const btn = document.getElementById("btnRunTextPdf");
+
+      btn.disabled = true;
+      btn.textContent = "Generating PDF...";
+
+      try {
+        if (window.jspdf && window.jspdf.jsPDF) {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF({ unit: "pt", format: "a4" });
+          const pageWidth = doc.internal.pageSize.getWidth();
+          const pageHeight = doc.internal.pageSize.getHeight();
+          const margin = 42;
+          const maxLineWidth = pageWidth - margin * 2;
+
+          let y = 50;
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(18);
+          doc.setTextColor(27, 42, 65);
+          doc.text(title, margin, y);
+          y += 20;
+
+          doc.setFont("helvetica", "italic");
+          doc.setFontSize(10);
+          doc.setTextColor(110, 127, 108);
+          let metaStr = `Author: ${author}  •  Date: ${new Date().toLocaleDateString()}`;
+          if (subject) metaStr += `  •  Course: ${subject}`;
+          doc.text(metaStr, margin, y);
+          y += 12;
+
+          doc.setDrawColor(27, 42, 65);
+          doc.setLineWidth(0.75);
+          doc.line(margin, y, pageWidth - margin, y);
+          y += 20;
+
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(fontSize);
+          doc.setTextColor(33, 32, 28);
+
+          const lines = doc.splitTextToSize(content, maxLineWidth);
+          const lineHeight = fontSize * 1.45;
+
+          for (let i = 0; i < lines.length; i++) {
+            if (y + lineHeight > pageHeight - margin) {
+              doc.addPage();
+              y = margin;
+            }
+            doc.text(lines[i], margin, y);
+            y += lineHeight;
+          }
+
+          doc.save(`${title.replace(/\s+/g, '_')}.pdf`);
+          showToast("Notes PDF downloaded!", "success");
+        } else {
+          // Backend fallback
+          const res = await fetch("/api/tools/text-to-pdf", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, author, subject, content })
+          });
+          const blob = await res.blob();
+          triggerDownload(blob, `${title.replace(/\s+/g, '_')}.pdf`);
+          showToast("Notes PDF downloaded!", "success");
+        }
+      } catch (err) {
+        console.error("Text to PDF error:", err);
+        try {
+          const res = await fetch("/api/tools/text-to-pdf", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, author, subject, content })
+          });
+          const blob = await res.blob();
+          triggerDownload(blob, `${title.replace(/\s+/g, '_')}.pdf`);
+          showToast("Notes PDF downloaded via server!", "success");
+        } catch (e2) {
+          showToast("Failed to generate PDF from text", "error");
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Generate Notes PDF & Download";
+      }
+    }
+
+    /* ============================================================== */
+    /* 4. DOCUMENT TO PDF CONTROLLER                                  */
+    /* ============================================================== */
+    let activeDocFile = null;
+
+    async function handleDocFileSelected(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      activeDocFile = file;
+
+      const container = document.getElementById("docPreviewContainer");
+      const fileNameEl = document.getElementById("docFileName");
+      const fileSizeEl = document.getElementById("docFileSize");
+      const previewEl = document.getElementById("docPreviewText");
+
+      fileNameEl.textContent = file.name;
+      fileSizeEl.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+      container.style.display = "block";
+      previewEl.textContent = "Loading document preview...";
+
+      try {
+        if (file.name.toLowerCase().endsWith(".docx") && window.mammoth) {
+          const arrayBuf = await file.arrayBuffer();
+          const result = await mammoth.extractRawText({ arrayBuffer: arrayBuf });
+          previewEl.textContent = result.value.slice(0, 1500) + (result.value.length > 1500 ? "\n\n... [Full document will be rendered in PDF]" : "");
+        } else {
+          const text = await file.text();
+          previewEl.textContent = text.slice(0, 1500) + (text.length > 1500 ? "\n\n... [Full document will be rendered in PDF]" : "");
+        }
+      } catch (err) {
+        previewEl.textContent = `Document ready to convert: ${file.name}`;
+      }
+    }
+
+    async function executeDocToPdf() {
+      if (!activeDocFile) {
+        showToast("Please select a document file first", "error");
+        return;
+      }
+
+      const btn = document.getElementById("btnRunDocPdf");
+      btn.disabled = true;
+      btn.textContent = "Converting Document to PDF...";
+
+      try {
+        const formData = new FormData();
+        formData.append("file", activeDocFile);
+
+        const res = await fetch("/api/tools/document-to-pdf", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Document conversion failed");
+        }
+
+        const blob = await res.blob();
+        const outName = activeDocFile.name.replace(/\.[^/.]+$/, "") + ".pdf";
+        triggerDownload(blob, outName);
+        showToast("Document converted & downloaded!", "success");
+      } catch (err) {
+        console.error("Doc to PDF error:", err);
+        showToast(err.message || "Error converting document", "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Convert Document to PDF & Download";
+      }
+    }
+
+    /* ============================================================== */
+    /* 5. SMART ATTENDANCE & BUNK CALCULATOR                          */
+    /* ============================================================== */
+    function calculateAttendance() {
+      const totalInput = document.getElementById("calcTotalLectures");
+      const attendedInput = document.getElementById("calcAttendedLectures");
+      const targetInput = document.getElementById("calcTargetPct");
+
+      if (!totalInput || !attendedInput || !targetInput) return;
+
+      let total = parseInt(totalInput.value) || 0;
+      let attended = parseInt(attendedInput.value) || 0;
+      let target = parseFloat(targetInput.value) || 75.0;
+
+      if (total < 0) { total = 0; totalInput.value = 0; }
+      if (attended < 0) { attended = 0; attendedInput.value = 0; }
+
+      if (attended > total) {
+        attended = total;
+        attendedInput.value = total;
+      }
+
+      let pct = total > 0 ? ((attended / total) * 100) : 0;
+      pct = Math.round(pct * 10) / 10;
+
+      document.getElementById("gaugeVal").innerHTML = `${pct}<small>%</small>`;
+      document.getElementById("gaugeRatio").textContent = `${attended} / ${total} Attended`;
+
+      const circle = document.getElementById("gaugeCircle");
+      if (circle) {
+        const circumference = 2 * Math.PI * 70; // ~439.8
+        const offset = circumference - (pct / 100) * circumference;
+        circle.style.strokeDasharray = circumference;
+        circle.style.strokeDashoffset = Math.max(0, offset);
+      }
+
+      const badge = document.getElementById("attendanceStatusBadge");
+      const banner = document.getElementById("attendanceGuidanceBanner");
+      if (!badge || !banner) return;
+
+      if (pct >= target) {
+        if (circle) circle.style.stroke = "#2E7D32";
+        badge.className = "status-badge safe";
+        badge.textContent = `🟢 SAFE ZONE (≥ ${target}%)`;
+
+        banner.className = "bunk-banner safe";
+        banner.innerHTML = `
+          🎉 <strong>Exam Eligible:</strong> Your current attendance is <strong>${pct}%</strong>, meeting the mandatory criteria (≥ ${target}%). Keep up regular attendance!
+        `;
+      } else if (pct >= 65) {
+        if (circle) circle.style.stroke = "#F57F17";
+        badge.className = "status-badge warning";
+        badge.textContent = `🟡 BORDERLINE (${pct}%)`;
+
+        banner.className = "bunk-banner warning";
+        banner.innerHTML = `
+          ⚠️ <strong>Borderline Zone:</strong> Your attendance is at <strong>${pct}%</strong>, which is below the required <strong>${target}%</strong>. Attend your upcoming lectures regularly.
+        `;
+      } else {
+        if (circle) circle.style.stroke = "#C62828";
+        badge.className = "status-badge danger";
+        badge.textContent = `🔴 DEBARRED RISK (< 65%)`;
+
+        banner.className = "bunk-banner danger";
+        banner.innerHTML = `
+          ⚠️ <strong>Attendance Alert:</strong> Your attendance is currently at <strong>${pct}%</strong>. Attendance below 65% puts you at risk of being debarred from exams.
+        `;
+      }
+    }
+
+    function syncTargetSlider(val) {
+      document.getElementById("calcTargetPct").value = val;
+      calculateAttendance();
+    }
+
+    function syncTargetInput(val) {
+      let v = Math.max(50, Math.min(100, parseFloat(val) || 75));
+      document.getElementById("calcTargetSlider").value = v;
+      calculateAttendance();
+    }
+
+    function quickIncrementAttendance(attInc, totInc) {
+      const totEl = document.getElementById("calcTotalLectures");
+      const attEl = document.getElementById("calcAttendedLectures");
+      totEl.value = (parseInt(totEl.value) || 0) + totInc;
+      attEl.value = (parseInt(attEl.value) || 0) + attInc;
+      calculateAttendance();
+      showToast(attInc > 0 ? "Recorded today's attended lecture" : "Recorded today's missed lecture", "info");
+    }
+
+    function resetAttendanceCalc() {
+      document.getElementById("calcTotalLectures").value = 0;
+      document.getElementById("calcAttendedLectures").value = 0;
+      calculateAttendance();
+    }
+
+    /* ============================================================== */
+    /* 6. SUBJECT-WISE SEMESTER TRACKER (LOCALSTORAGE)                */
+    /* ============================================================== */
+    const STORAGE_KEY = "crh_student_course_attendance_tracker_v2";
+
+    let trackerSubjects = [];
+
+    function initAttendanceTracker() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            trackerSubjects = parsed;
+          }
+        }
+      } catch (e) {
+        console.warn("LocalStorage load error:", e);
+      }
+      renderSubjectTracker();
+    }
+
+    function saveAttendanceTracker() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(trackerSubjects));
+      } catch (e) {
+        console.warn("LocalStorage save error:", e);
+      }
+    }
+
+    function renderSubjectTracker() {
+      const grid = document.getElementById("subjectGrid");
+      const aggRatio = document.getElementById("aggRatio");
+      const aggPct = document.getElementById("aggPct");
+      const aggBadge = document.getElementById("aggStatusBadge");
+
+      if (!grid) return;
+      grid.innerHTML = "";
+
+      if (!trackerSubjects || trackerSubjects.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 28px 16px; background: var(--paper-card); border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 12px;">
+            No courses added yet.<br>Click <strong>"+ Add Course"</strong> above to enter your subjects and start tracking.
+          </div>
+        `;
+        if (aggRatio) aggRatio.textContent = "0 / 0";
+        if (aggPct) aggPct.textContent = "0%";
+        if (aggBadge) {
+          aggBadge.className = "status-badge safe";
+          aggBadge.textContent = "No courses";
+        }
+        return;
+      }
+
+      let totalAttended = 0;
+      let totalConducted = 0;
+
+      trackerSubjects.forEach(sub => {
+        totalAttended += sub.attended;
+        totalConducted += sub.total;
+
+        const pct = sub.total > 0 ? Math.round((sub.attended / sub.total) * 1000) / 10 : 0;
+        const statusClass = pct >= 75 ? "safe" : (pct >= 65 ? "warning" : "danger");
+
+        const card = document.createElement("div");
+        card.className = "subject-card";
+        card.innerHTML = `
+          <div class="subject-card-top">
+            <div>
+              <div class="subject-card-title">${escapeQuote(sub.name)}</div>
+              <div style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--sage); margin-top:2px;">
+                ${pct >= 75 ? 'Criteria Met (≥75%)' : (pct >= 65 ? 'Borderline (65-74%)' : 'Critical (<65%)')}
+              </div>
+            </div>
+            <div class="subject-card-stats">
+              <span class="subject-pct ${statusClass}">${pct}%</span>
+            </div>
+          </div>
+          <div class="subject-counts">
+            Attended: <strong>${sub.attended}</strong> of <strong>${sub.total}</strong> conducted
+          </div>
+          <div class="subject-actions">
+            <button class="action-btn-attend" onclick="incrementSubject(${sub.id}, 1, 1)">+ Attend</button>
+            <button class="action-btn-miss" onclick="incrementSubject(${sub.id}, 0, 1)">+ Miss</button>
+            <button class="action-btn-del" onclick="deleteSubject(${sub.id})" title="Delete Course">✕</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      const overallPct = totalConducted > 0 ? Math.round((totalAttended / totalConducted) * 1000) / 10 : 0;
+      if (aggRatio) aggRatio.textContent = `${totalAttended} / ${totalConducted}`;
+      if (aggPct) aggPct.textContent = `${overallPct}%`;
+
+      if (aggBadge) {
+        if (overallPct >= 75) {
+          aggBadge.className = "status-badge safe";
+          aggBadge.textContent = "Eligible (≥75%)";
+        } else if (overallPct >= 65) {
+          aggBadge.className = "status-badge warning";
+          aggBadge.textContent = "Warning (65-74%)";
+        } else {
+          aggBadge.className = "status-badge danger";
+          aggBadge.textContent = "Debarred Risk (<65%)";
+        }
+      }
+    }
+
+    function incrementSubject(id, attInc, totInc) {
+      const sub = trackerSubjects.find(s => s.id === id);
+      if (sub) {
+        sub.total += totInc;
+        sub.attended += attInc;
+        saveAttendanceTracker();
+        renderSubjectTracker();
+      }
+    }
+
+    function deleteSubject(id) {
+      trackerSubjects = trackerSubjects.filter(s => s.id !== id);
+      saveAttendanceTracker();
+      renderSubjectTracker();
+      showToast("Course removed from tracker", "info");
+    }
+
+    function openAddSubjectModal() {
+      document.getElementById("addSubjectModal").classList.add("active");
+      document.getElementById("newSubjectName").focus();
+    }
+
+    function closeAddSubjectModal() {
+      document.getElementById("addSubjectModal").classList.remove("active");
+      document.getElementById("addSubjectForm").reset();
+    }
+
+    function handleAddSubjectSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById("newSubjectName").value.trim();
+      const attended = parseInt(document.getElementById("newSubjectAttended").value) || 0;
+      const total = parseInt(document.getElementById("newSubjectTotal").value) || 0;
+
+      if (!name) return;
+      if (attended > total) {
+        showToast("Attended cannot exceed total conducted classes", "error");
+        return;
+      }
+
+      const newSub = {
+        id: Date.now(),
+        name,
+        attended,
+        total
+      };
+
+      trackerSubjects.push(newSub);
+      saveAttendanceTracker();
+      renderSubjectTracker();
+      closeAddSubjectModal();
+      showToast(`Added "${name}" to your course tracker!`, "success");
+    }
+
+    function triggerDownload(blob, filename) {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 1500);
+    }
+
+    // Start application on page load
+    window.addEventListener("DOMContentLoaded", initApp);
+  </script>
+</body>
+</html>
