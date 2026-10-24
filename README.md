@@ -67,9 +67,9 @@ The system comes pre-seeded with sample administrator and student credentials fo
 
 | Role | Name | Email / College ID | Password |
 |---|---|---|---|
-| **Head Admin** | Anukalp Sharma | `admin1@college.edu` | `happy1100` |
-| **Admin** | Prachi Sharma | `admin2@college.edu` | `prachi1100` |
-| **Admin** | Johara Shaikh | `admin3@college.edu` | `johara1100` |
+| **Head Admin** | Anukalp Sharma | `admin1@college.edu` | |
+| **Admin** | Prachi Sharma | `admin2@college.edu` |
+| **Admin** | Johara Shaikh | `admin3@college.edu` |
 | **Student** | Test Student | `student@college.edu` | `student123` |
 
 *New students can also create their own accounts instantly using the `/register` page.*
