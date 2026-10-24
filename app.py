@@ -29,6 +29,8 @@ from database import (
 )
 import time
 import socket
+import webbrowser
+
 
 # Cloudflare Global Tunnel Controller (Enables Mobile/Remote Access Anywhere)
 PUBLIC_TUNNEL_URL = None
@@ -1014,9 +1016,17 @@ if __name__ == "__main__":
     init_db()
     print("Database initialized successfully.")
     
-    # Start Cloudflare Tunnel once (in reloader parent process)
+    # Start Cloudflare Tunnel and open browser once (in reloader parent process)
     if os.environ.get("WERKZEUG_RUN_MAIN") != "true":
         start_public_tunnel(port=5000)
+        def _launch_browser():
+            time.sleep(1.2)
+            try:
+                webbrowser.open("http://127.0.0.1:5000")
+            except Exception:
+                pass
+        threading.Thread(target=_launch_browser, daemon=True).start()
+
 
     print("Starting College Resource Hub server on http://127.0.0.1:5000 ...")
     app.run(host="0.0.0.0", port=5000, debug=True)

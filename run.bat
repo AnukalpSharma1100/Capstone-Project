@@ -34,10 +34,12 @@ echo.
 echo [3/3] Launching Server and Cloudflare Tunnel...
 echo.
 echo * Note: Demo logins (Admin 1, 2, 3, Student) are active on this PC.
-echo * When you share the Public Link with friends, demo accounts are HIDDEN.
-echo * Friends will create their own student account to access papers.
+echo * Opening http://127.0.0.1:5000 in your web browser...
+echo * IMPORTANT: Keep this window OPEN while using the website!
 echo.
 echo Starting server...
+start "" "http://127.0.0.1:5000"
 python app.py
 pause
+
 

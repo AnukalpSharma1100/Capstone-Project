@@ -1,0 +1,13 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary public url file
+public_url.txt
+
+# Cloudflare tunnel logs & temporary files
+*.log
+
+# Environment variables
+.env
