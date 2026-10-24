@@ -11,3 +11,6 @@ public_url.txt
 
 # Environment variables
 .env
+
+# Archives & Backups
+*.zip
