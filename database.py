@@ -229,14 +229,14 @@ def seed_sample_papers(cursor):
             "content": "%PDF-1.4\n% Sample Question Paper - Engineering Physics\n1. Explain Interference in thin films.\n2. What is Laser population inversion?\n3. Explain Heisenberg Uncertainty Principle."
         },
         {
-            "title": "Algorithms - End Sem 2024",
+            "title": "Analysis of Algorithm - End Sem 2024",
             "branch": "COMPS",
             "year_of_study": 2,
             "semester": "Semester 4",
-            "subject": "Algorithms",
+            "subject": "Analysis of Algorithm",
             "exam_type": "END SEM",
             "exam_year": "2024",
-            "content": "%PDF-1.4\n% Sample Question Paper - Algorithms\n1. Explain Master Theorem with examples.\n2. Describe 0/1 Knapsack problem using Dynamic Programming.\n3. Explain Kruskal's algorithm for MST."
+            "content": "%PDF-1.4\n% Sample Question Paper - Analysis of Algorithm\n1. Explain Master Theorem with examples.\n2. Describe 0/1 Knapsack problem using Dynamic Programming.\n3. Explain Kruskal's algorithm for MST."
         },
         {
             "title": "Computer Networks - IAE 1 2025",
@@ -300,17 +300,23 @@ ACADEMIC_HIERARCHY = {
     "AIML": {
         2: {
             "Semester 3": [
-                "Data Structures",
-                "DBMS",
                 "Discrete Mathematics",
-                "Python for AI",
-                "Linear Algebra for AI (LAIOA)"
+                "Data Structures",
+                "Microprocessor and Computer Architecture",
+                "Database Management System",
+                "Programming Language I (Python)",
+                "Universal Human Values",
+                "Basic Communication Skills - II"
             ],
             "Semester 4": [
-                "Design & Analysis of Algorithms",
-                "Operating Systems",
+                "Statistics and Probability",
+                "Analysis of Algorithm",
                 "Computer Networks",
-                "Machine Learning I"
+                "Operating System",
+                "Employability Enhancement Program - II (Communication)",
+                "Employability Enhancement Program - III (Industry Certification)",
+                "Multidisciplinary Minor (MDM)",
+                "Internship I"
             ]
         },
         3: {
@@ -344,10 +350,13 @@ ACADEMIC_HIERARCHY = {
     "DS": {
         2: {
             "Semester 3": [
+                "Discrete Mathematics",
                 "Data Structures",
-                "DBMS",
-                "Statistics for DS",
-                "Python Programming"
+                "Microprocessor and Computer Architecture",
+                "Database Management System",
+                "Programming Language I (Python)",
+                "Universal Human Values",
+                "Employability Enhancement Program - I (Communication)"
             ],
             "Semester 4": [
                 "Algorithms",
@@ -387,16 +396,23 @@ ACADEMIC_HIERARCHY = {
     "COMPS": {
         2: {
             "Semester 3": [
-                "Data Structures",
-                "DBMS",
                 "Discrete Mathematics",
-                "Computer Organization"
+                "Data Structures",
+                "Microprocessor & Computer Architecture",
+                "Database Management System",
+                "Programming Language I",
+                "Universal Human Values",
+                "Employability Enhancement Program - I (Communication)"
             ],
             "Semester 4": [
-                "Algorithms",
-                "Operating Systems",
+                "Statistics and Probability",
+                "Analysis of Algorithm",
                 "Computer Networks",
-                "OOP with Java"
+                "Operating System",
+                "Employability Enhancement Program - II (Communication)",
+                "Employability Enhancement Program - III (Industry Certification)",
+                "Multidisciplinary Minor",
+                "Internship I"
             ]
         },
         3: {
@@ -430,16 +446,23 @@ ACADEMIC_HIERARCHY = {
     "IT": {
         2: {
             "Semester 3": [
-                "Data Structures",
-                "DBMS",
                 "Discrete Mathematics",
-                "Computer Organization"
+                "Data Structures",
+                "Microprocessor and Computer Architecture",
+                "Database Management System",
+                "Programming Language I (Python)",
+                "Universal Human Values",
+                "Employability Enhancement Program - I (Communication)"
             ],
             "Semester 4": [
-                "Algorithms",
-                "Operating Systems",
+                "Statistics and Probability",
+                "Analysis of Algorithm",
                 "Computer Networks",
-                "Web Programming"
+                "Operating System",
+                "Employability Enhancement Program - II (Communication)",
+                "Employability Enhancement Program - III (Industry Certification)",
+                "Multidisciplinary Minor (MDM)",
+                "Internship I"
             ]
         },
         3: {
@@ -473,16 +496,23 @@ ACADEMIC_HIERARCHY = {
     "ECS": {
         2: {
             "Semester 3": [
-                "Circuit Theory",
-                "Digital Electronics",
-                "Signals & Systems",
-                "Electronic Devices"
+                "Discrete Mathematics",
+                "Semiconductor Devices & Circuits",
+                "Digital Electronics & Computer Organization",
+                "Data Structures & Algorithm",
+                "Professional Skills (Python)",
+                "Basic Communication Skills - II",
+                "Universal Human Values - II"
             ],
             "Semester 4": [
-                "Analog Electronics",
-                "Microprocessors",
-                "Control Systems",
-                "EM Theory"
+                "Statistical Analysis",
+                "Microprocessor and Microcontroller",
+                "Computer Networks",
+                "Sensors Technology and Application",
+                "Employability Enhancement Program - II (Communication)",
+                "Employability Enhancement Program - III (Industry Certification)",
+                "Multidisciplinary Minor",
+                "Internship-I"
             ]
         },
         3: {
@@ -516,16 +546,23 @@ ACADEMIC_HIERARCHY = {
     "CIVIL": {
         2: {
             "Semester 3": [
-                "Strength of Materials",
+                "Mathematics for Civil Engineering",
+                "Geology and Basics of Geotechnology",
                 "Fluid Mechanics",
-                "Surveying",
-                "Building Materials"
+                "Strength of Materials",
+                "Building Planning and Computer-Aided Civil Engineering Drawing",
+                "Universal Human Values",
+                "Employability Enhancement Program - I (Communication)"
             ],
             "Semester 4": [
                 "Structural Analysis",
-                "Concrete Technology",
-                "Geotechnical Engineering",
-                "Hydraulics"
+                "Soil Mechanics and Foundation Engineering",
+                "Environmental Engineering",
+                "Surveying",
+                "Employability Enhancement Program - II (Communication)",
+                "Employability Enhancement Program - III (Technical: Concrete Technology)",
+                "Multidisciplinary Minor",
+                "Internship-I"
             ]
         },
         3: {
@@ -559,16 +596,24 @@ ACADEMIC_HIERARCHY = {
     "MECHANICAL": {
         2: {
             "Semester 3": [
-                "Thermodynamics",
-                "Strength of Materials",
-                "Manufacturing Processes",
-                "Fluid Mechanics"
+                "Mathematics for Mechanical Engineering",
+                "Thermal Science and Engineering",
+                "Mechanics of Materials",
+                "Conventional and Digital Fabrication",
+                "Material Science and Engineering",
+                "Solid Modeling and 3D Printing Lab",
+                "Universal Human Values",
+                "Employability Enhancement Program - I (Communication)"
             ],
             "Semester 4": [
-                "Machine Design I",
-                "Heat Transfer",
-                "Kinematics of Machinery",
-                "Materials Science"
+                "Fluid Mechanics and Hydraulic Machines",
+                "Computer Aided Design and Manufacturing",
+                "Industrial Electronics",
+                "Kinematics & Dynamics of Machines",
+                "Employability Enhancement Program - II (Communication)",
+                "Employability Enhancement Program - III (Industry Certification)",
+                "Multidisciplinary Minor",
+                "Internship-I"
             ]
         },
         3: {

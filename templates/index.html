@@ -2170,6 +2170,8 @@
           <div class="form-group">
             <label for="upExamYear">Exam Year</label>
             <select id="upExamYear" required>
+              <option value="2027">2027</option>
+              <option value="2026">2026</option>
               <option value="2025">2025</option>
               <option value="2024" selected>2024</option>
               <option value="2023">2023</option>
@@ -2325,7 +2327,7 @@
     let allPapersCache = [];
 
     const EXAM_TYPES = ["IAE 1", "IAE 2", "END SEM"];
-    const YEARS = ["2025", "2024", "2023", "2022"];
+    const YEARS = ["2027", "2026", "2025", "2024", "2023", "2022", "2021"];
 
     /* Toast Notification Helper */
     function showToast(msg, type = "info") {
